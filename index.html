@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartes NFC Avis Google</title>
+    <meta name="description" content="Cartes NFC pour avis Google : vos clients tapent leur téléphone et laissent un avis. Livraison Lille.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; color: #d1d5db; background: #0a0a0a; line-height: 1.6; }
+        a { text-decoration: none; color: #d1d5db; }
+        img { max-width: 100%; display: block; }
+        ul { list-style: none; }
+        :root {
+            --bg: #0a0a0a; --bg-card: #111; --bg-section: #0d0d0d;
+            --border: #1f1f1f; --border-light: #2a2a2a;
+            --text: #d1d5db; --text-muted: #6b7280; --text-light: #9ca3af;
+            --radius: 16px; --radius-sm: 8px;
+            --shadow: 0 4px 20px rgba(0,0,0,.5); --shadow-lg: 0 10px 40px rgba(0,0,0,.6);
+            --container: 1200px;
+        }
+        .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
+        .section { padding: 100px 0; }
+        .text-center { text-align: center; }
+        .section-title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 700; line-height: 1.2; margin-bottom: 16px; color: #f3f4f6; letter-spacing: -.02em; }
+        .section-subtitle { font-size: 1rem; color: var(--text-light); max-width: 560px; line-height: 1.7; margin: 0 auto; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; font-size: .9rem; font-weight: 600; padding: 12px 28px; border-radius: 50px; border: none; cursor: pointer; transition: all .25s; letter-spacing: .01em; }
+        .btn-primary { background: #fff; color: #0a0a0a; }
+        .btn-primary:hover { background: #e5e5e5; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid #333; }
+        .btn-outline:hover { background: #1a1a1a; border-color: #555; }
+        .icon { display: inline-block; flex-shrink: 0; }
+        .icon-inline { vertical-align: -3px; margin-right: 5px; }
+
+        /* HEADER */
+        .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(10,10,10,.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(31,31,31,.6); }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: #f3f4f6; letter-spacing: -.01em; }
+        .logo-icon { width: 32px; height: 32px; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid #333; }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-links a { font-size: .85rem; font-weight: 500; color: var(--text-light); transition: color .2s; }
+        .nav-links a:hover { color: #fff; }
+        .menu-toggle { display: none; flex-direction: column; gap: 4px; background: none; border: none; cursor: pointer; padding: 4px; }
+        .menu-toggle span { display: block; width: 22px; height: 1.5px; background: #999; border-radius: 2px; transition: all .3s; }
+        .cart-btn { position: relative; background: #141414; border: 1px solid #2a2a2a; color: var(--text); font-size: 1rem; padding: 8px 12px; border-radius: 50px; cursor: pointer; display: flex; align-items: center; transition: border-color .2s; }
+        .cart-btn:hover { border-color: #555; }
+        .cart-count { position: absolute; top: -4px; right: -4px; background: #fff; color: #0a0a0a; font-size: .65rem; font-weight: 700; min-width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+        @media (max-width: 767px) {
+            .menu-toggle { display: flex; }
+            .nav-links { position: fixed; top: 64px; left: 0; right: 0; background: rgba(10,10,10,.98); flex-direction: column; padding: 24px; gap: 16px; border-bottom: 1px solid var(--border); transform: translateY(-120%); opacity: 0; transition: all .35s; pointer-events: none; }
+            .nav-links.open { transform: translateY(0); opacity: 1; pointer-events: all; }
+        }
+
+        /* HERO */
+        .hero { padding: 140px 0 80px; position: relative; overflow: hidden; }
+        .hero-bg { position: absolute; inset: 0; z-index: 0; }
+        .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: .08; }
+        .hero-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(10,10,10,0) 0%, #0a0a0a 70%); z-index: 1; }
+        .hero-grid { display: grid; grid-template-columns: 1fr; gap: 60px; align-items: center; position: relative; z-index: 2; }
+        @media (min-width: 860px) { .hero-grid { grid-template-columns: 1fr 1fr; gap: 60px; } }
+        .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.05); color: var(--text-light); font-size: .75rem; font-weight: 500; padding: 6px 14px; border-radius: 50px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,.08); letter-spacing: .06em; text-transform: uppercase; }
+        .hero-title { font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 700; line-height: 1.1; margin-bottom: 20px; color: #f3f4f6; letter-spacing: -.03em; }
+        .hero-title span { color: #fff; }
+        .hero-subtitle { font-size: 1.05rem; color: var(--text-light); line-height: 1.7; margin-bottom: 32px; max-width: 480px; }
+
+        /* HERO DEMO - animation tap */
+        .hero-demo { position: relative; width: 100%; max-width: 340px; margin: 0 auto; aspect-ratio: 1/1.1; background: radial-gradient(circle at 50% 40%, #141414 0%, #0a0a0a 70%); border-radius: 24px; border: 1px solid var(--border); overflow: hidden; }
+        .demo-card { position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%); width: 62%; aspect-ratio: 1.58/1; background: linear-gradient(135deg,#1c1c1c,#0f0f0f); border: 1px solid #333; border-radius: 12px; box-shadow: 0 14px 40px rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; color: #444; }
+        .demo-ring { position: absolute; bottom: 18%; left: 50%; width: 62%; aspect-ratio: 1.58/1; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.35); transform: translate(-50%,0) scale(1); opacity: 0; }
+        .demo-phone { position: absolute; left: 50%; width: 38%; aspect-ratio: 9/18; background: linear-gradient(160deg,#2a2a2a,#111); border: 2px solid #3a3a3a; border-radius: 22px; transform: translateX(-50%); animation: tapMove 3.2s ease-in-out infinite; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+        .demo-phone::after { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 30%; height: 4px; background: #444; border-radius: 4px; }
+        .demo-stars { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 1.3rem; opacity: 0; letter-spacing: 3px; animation: starPop 3.2s ease-in-out infinite; }
+        .demo-ring { animation: ringPulse 3.2s ease-in-out infinite; }
+        @keyframes tapMove {
+            0%, 8% { top: 4%; }
+            38%, 55% { top: 42%; }
+            85%, 100% { top: 4%; }
+        }
+        @keyframes ringPulse {
+            0%, 40% { opacity: 0; transform: translate(-50%,0) scale(1); }
+            48% { opacity: .8; transform: translate(-50%,0) scale(1); }
+            68% { opacity: 0; transform: translate(-50%,0) scale(1.35); }
+            100% { opacity: 0; }
+        }
+        @keyframes starPop {
+            0%, 45% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            58%, 88% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+        }
+        .demo-label { position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%); font-size: .72rem; color: var(--text-muted); white-space: nowrap; }
+        @media (prefers-reduced-motion: reduce) { .demo-phone, .demo-ring, .demo-stars { animation: none; } .demo-phone{top:4%;} }
+
+        /* PROOF */
+        .proof-bar { background: #0d0d0d; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 0; }
+        .proof-inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px 64px; }
+        .proof-item { display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: .85rem; font-weight: 500; }
+        .proof-item .num { color: #f3f4f6; font-weight: 700; }
+
+        /* GRID CARDS */
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 48px; }
+        @media (min-width: 640px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 48px; }
+        @media (min-width: 640px) { .grid-2 { grid-template-columns: repeat(2, 1fr); } }
+        .tile { padding: 36px 28px; border-radius: var(--radius); background: var(--bg-card); border: 1px solid var(--border); transition: all .25s; }
+        .tile:hover { border-color: #333; }
+        .tile-icon { width: 40px; height: 40px; margin-bottom: 16px; border-radius: 10px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid #2a2a2a; }
+        .tile h3 { font-size: 1rem; font-weight: 600; color: #f3f4f6; margin-bottom: 8px; }
+        .tile p { font-size: .85rem; color: var(--text-light); line-height: 1.6; }
+        .tile-num { text-align: center; }
+        .tile-num .num { font-size: 2.4rem; font-weight: 700; color: #f3f4f6; display: block; }
+        .tile-num .label { font-size: .85rem; color: var(--text-muted); }
+
+        /* DEVIS */
+        .devis-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px; padding: 32px 36px; border-radius: var(--radius); background: linear-gradient(135deg,#141414,#0d0d0d); border: 1px solid var(--border-light); }
+        .devis-icon { width: 52px; height: 52px; border-radius: 12px; background: #1a1a1a; border: 1px solid #2a2a2a; display: flex; align-items: center; justify-content: center; color: #f3f4f6; flex-shrink: 0; }
+        .devis-text h3 { font-size: 1.05rem; font-weight: 600; color: #f3f4f6; margin-bottom: 6px; }
+        .devis-text p { font-size: .85rem; color: var(--text-light); line-height: 1.65; max-width: 480px; }
+        .devis-actions { display: flex; flex-direction: column; gap: 10px; }
+        .devis-actions .btn { white-space: nowrap; justify-content: center; }
+        @media (max-width: 767px) {
+            .devis-card { grid-template-columns: 1fr; text-align: center; padding: 28px 24px; }
+            .devis-icon { margin: 0 auto; }
+            .devis-text p { max-width: none; }
+        }
+
+        /* PRICING */
+        .pricing-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 48px; }
+        @media (min-width: 640px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); } }
+        .pricing-card { padding: 36px 28px; border-radius: var(--radius); background: var(--bg-card); border: 1px solid var(--border); transition: all .25s; display: flex; flex-direction: column; }
+        .pricing-card:hover { border-color: #333; transform: translateY(-2px); }
+        .pricing-card.popular { border-color: #333; background: #141414; }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fff; color: #0a0a0a; font-size: .7rem; font-weight: 600; padding: 4px 16px; border-radius: 50px; letter-spacing: .04em; }
+        .pricing-card.popular { position: relative; margin-top: 12px; }
+        .pricing-name { font-size: .9rem; font-weight: 500; color: var(--text-light); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em; }
+        .pricing-price { font-size: 2.6rem; font-weight: 700; color: #f3f4f6; margin-bottom: 2px; letter-spacing: -.02em; }
+        .pricing-per { font-size: .85rem; color: var(--text-muted); margin-bottom: 20px; }
+        .pricing-desc { font-size: .85rem; color: var(--text-light); margin-bottom: 24px; }
+        .pricing-features { flex: 1; margin-bottom: 24px; }
+        .pricing-features li { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--text); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+        .pricing-features li:last-child { border-bottom: none; }
+        .pricing-features .check { color: #22c55e; }
+        .pricing-card .btn { width: 100%; justify-content: center; }
+
+        /* DELIVERY */
+        .delivery-card { max-width: 600px; margin: 48px auto 0; padding: 40px 36px; border-radius: var(--radius); background: var(--bg-card); border: 1px solid var(--border); text-align: center; }
+        .delivery-card h3 { font-size: 1.2rem; font-weight: 600; color: #f3f4f6; margin-bottom: 12px; }
+        .delivery-card p { font-size: .9rem; color: var(--text-light); line-height: 1.7; }
+        .badge { display: inline; background: rgba(255,255,255,.06); color: var(--text-light); font-weight: 600; padding: 2px 8px; border-radius: 4px; font-size: .85rem; }
+
+        /* FAQ */
+        .faq-list { max-width: 640px; margin: 48px auto 0; }
+        .faq-item { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+        .faq-question { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg-card); border: none; cursor: pointer; font-size: .9rem; font-weight: 500; text-align: left; color: var(--text); }
+        .faq-question .icon { font-size: 1.1rem; transition: transform .3s; flex-shrink: 0; margin-left: 12px; color: var(--text-muted); }
+        .faq-item.open .faq-question .icon { transform: rotate(45deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height .35s ease; padding: 0 20px; font-size: .85rem; line-height: 1.7; color: var(--text-light); }
+        .faq-item.open .faq-answer { max-height: 200px; padding: 0 20px 16px; }
+
+        /* CTA */
+        .cta-section { background: #0d0d0d; border-top: 1px solid var(--border); text-align: center; }
+        .cta-contact { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 1.05rem; }
+        .cta-contact a { color: #fff; font-weight: 500; }
+
+        /* FOOTER */
+        .footer { background: #050505; color: var(--text-muted); padding: 48px 0 32px; border-top: 1px solid var(--border); }
+        .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px; }
+        .footer-brand p { font-size: .85rem; max-width: 280px; line-height: 1.7; margin-top: 12px; }
+        .footer-col h4 { color: #f3f4f6; font-size: .85rem; font-weight: 600; margin-bottom: 12px; }
+        .footer-col a { display: block; font-size: .85rem; padding: 4px 0; color: var(--text-muted); transition: color .2s; }
+        .footer-col a:hover { color: #fff; }
+        .footer-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: .8rem; }
+
+        /* CART DRAWER */
+        .cart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.7); z-index: 2000; display: none; justify-content: flex-end; }
+        .cart-overlay.open { display: flex; }
+        .cart-drawer { background: #111; width: 100%; max-width: 420px; height: 100%; overflow-y: auto; padding: 28px; border-left: 1px solid var(--border); display: flex; flex-direction: column; animation: slideIn .3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .cart-header h2 { font-size: 1.15rem; font-weight: 700; color: #f3f4f6; }
+        .order-close { width: 32px; height: 32px; border: none; background: #1a1a1a; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text-light); border: 1px solid #333; flex-shrink: 0; }
+        .cart-empty { text-align: center; padding: 40px 10px; color: var(--text-light); }
+        .cart-items { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+        .cart-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
+        .cart-item-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .cart-item-info strong { font-size: .88rem; color: #f3f4f6; }
+        .cart-item-info span { font-size: .75rem; color: var(--text-muted); }
+        .cart-item-qty { display: flex; align-items: center; gap: 8px; }
+        .cart-item-qty button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #333; background: #1a1a1a; color: var(--text); cursor: pointer; font-size: .9rem; line-height: 1; }
+        .cart-item-qty span { min-width: 14px; text-align: center; font-size: .85rem; }
+        .cart-item-price { font-size: .85rem; font-weight: 600; color: #f3f4f6; white-space: nowrap; }
+        .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .85rem; padding: 4px; }
+        .cart-item-remove:hover { color: #fff; }
+        .cart-back { background: none; border: none; color: var(--text-light); font-size: .85rem; cursor: pointer; text-align: left; padding: 0; margin-bottom: 6px; }
+        .cart-back:hover { color: #fff; }
+        .cart-note { font-size: .78rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 4px; }
+        .cart-note a { color: #fff; text-decoration: underline; }
+        .order-form { display: flex; flex-direction: column; gap: 16px; }
+        .order-form label { font-size: .8rem; font-weight: 500; color: var(--text); display: block; margin-bottom: 4px; }
+        .order-form input, .order-form select, .order-form textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #2a2a2a; border-radius: 8px; font-size: .9rem; font-family: inherit; background: #0a0a0a; color: #d1d5db; }
+        .order-form input:focus, .order-form select:focus, .order-form textarea:focus { outline: none; border-color: #555; }
+        .order-form textarea { min-height: 70px; resize: vertical; }
+        .order-total { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .order-total-price { font-size: 1.4rem; font-weight: 700; color: #f3f4f6; }
+        .order-success { display: none; text-align: center; padding: 40px 20px; }
+        .order-success.show { display: block; }
+        .order-success .icon { font-size: 2.6rem; margin-bottom: 12px; }
+        .order-success h3 { font-size: 1.2rem; font-weight: 700; color: #f3f4f6; }
+
+        /* FADE */
+        .fade-in { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        .fade-in-d1 { transition-delay: .1s; }
+        .fade-in-d2 { transition-delay: .2s; }
+        .fade-in-d3 { transition-delay: .3s; }
+        @media (max-width: 639px) { .section { padding: 64px 0; } .hero { padding: 110px 0 56px; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <a href="#" class="logo"><span class="logo-icon"><svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"></rect><path d="M14 10.5a2.8 2.8 0 0 1 0 4"></path><path d="M17 8.5a5.8 5.8 0 0 1 0 8"></path></svg></span> Cartes NFC Avis</a>
+        <nav class="nav-links" id="navLinks">
+            <a href="#offres">Offres</a>
+            <a href="#devis">Devis</a>
+            <a href="#livraison">Livraison</a>
+            <a href="#faq">FAQ</a>
+            <a href="#contact" class="btn btn-primary" style="padding:7px 18px;font-size:.8rem;">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button class="cart-btn" id="cartBtn" onclick="openCart()" aria-label="Panier">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> <span class="cart-count" id="cartCount">0</span>
+            </button>
+            <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <div class="hero-grid">
+            <div>
+                <div class="hero-badge">✦ Solutions NFC</div>
+                <h1 class="hero-title">Une carte, un clic, <span>un avis</span></h1>
+                <p class="hero-subtitle">Vos clients posent leur téléphone sur la carte et arrivent directement sur votre page Google Review. Simple, rapide, efficace.</p>
+                <div class="hero-actions" style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <a href="#offres" class="btn btn-primary">Voir les offres</a>
+                    <a href="#contact" class="btn btn-outline">Me contacter</a>
+                </div>
+            </div>
+            <div class="hero-demo" role="img" aria-label="Animation : un client pose son téléphone sur la carte NFC et son avis Google part instantanément">
+                <div class="demo-stars">★★★★★</div>
+                <div class="demo-ring"></div>
+                <div class="demo-card"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a4 4 0 0 1 8 0"></path><path d="M5.5 9a7.5 7.5 0 0 1 13 0"></path><circle cx="12" cy="16" r="1.1" fill="currentColor" stroke="none"></circle></svg></div>
+                <div class="demo-phone"></div>
+                <div class="demo-label">Il suffit de poser le téléphone</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== PROOF ===== -->
+<div class="proof-bar">
+    <div class="container proof-inner">
+        <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6.5-9 12-9 12s-9-5.5-9-12a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Livraison <span class="num">Lille & alentours</span></span>
+        <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>Configuration <span class="num">offerte</span></span>
+        <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>Cartes <span class="num">prêtes à l'emploi</span></span>
+    </div>
+</div>
+
+<!-- ===== COMMENT ÇA MARCHE ===== -->
+<section class="section">
+    <div class="container text-center">
+        <h2 class="section-title">Comment ça marche</h2>
+        <p class="section-subtitle">Trois étapes, zéro friction.</p>
+        <div class="grid-3">
+            <div class="tile fade-in" style="text-align:center;padding:40px 24px;">
+                <div style="font-size:2rem;font-weight:700;color:#333;margin-bottom:16px;">01</div>
+                <h3>Le client arrive</h3>
+                <p>Il termine son repas ou ses achats, satisfait de l'expérience.</p>
+            </div>
+            <div class="tile fade-in fade-in-d1" style="text-align:center;padding:40px 24px;">
+                <div style="font-size:2rem;font-weight:700;color:#333;margin-bottom:16px;">02</div>
+                <h3>Il tape la carte</h3>
+                <p>Il pose son smartphone sur la carte NFC. La page Google Review s'ouvre.</p>
+            </div>
+            <div class="tile fade-in fade-in-d2" style="text-align:center;padding:40px 24px;">
+                <div style="font-size:2rem;font-weight:700;color:#333;margin-bottom:16px;">03</div>
+                <h3>Il laisse un avis</h3>
+                <p>Quelques tap et son avis 5★ est publié. Simple.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== AVANTAGES ===== -->
+<section class="section" style="background:#0d0d0d;">
+    <div class="container text-center">
+        <h2 class="section-title">Pourquoi une carte NFC ?</h2>
+        <p class="section-subtitle">Le moyen le plus simple d'obtenir des avis Google.</p>
+        <div class="grid-3" style="max-width:900px;margin:48px auto 0;">
+            <div class="tile fade-in">
+                <div class="tile-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+                <h3>Un tap, pas de friction</h3>
+                <p>Le client pose son téléphone, la page s'ouvre. Pas d'app, pas de QR code flou, pas d'effort.</p>
+            </div>
+            <div class="tile fade-in fade-in-d1">
+                <div class="tile-icon"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></div>
+                <h3>Pré-configurée</h3>
+                <p>Je programme votre lien Google Review avant la livraison. Vous posez la carte, c'est prêt.</p>
+            </div>
+            <div class="tile fade-in fade-in-d2">
+                <div class="tile-icon" style="font-size:1.3rem;font-weight:600;">∞</div>
+                <h3>Zéro entretien</h3>
+                <p>Pas de batterie, pas de Bluetooth, pas de Wi-Fi. La carte fonctionne indéfiniment.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== OFFRES ===== -->
+<section class="section" id="offres">
+    <div class="container text-center">
+        <h2 class="section-title">Nos offres</h2>
+        <p class="section-subtitle">Pas d'abonnement, pas de frais cachés.</p>
+        <div class="pricing-grid">
+            <div class="pricing-card fade-in">
+                <div class="pricing-name">1 carte</div>
+                <div class="pricing-price">40€</div>
+                <div class="pricing-per">Tarif unique</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 1 carte NFC</li>
+                    <li><span class="check">✓</span> Lien pré-configuré</li>
+                    <li><span class="check">✓</span> Configuration offerte</li>
+                </ul>
+                <button class="btn btn-outline" onclick="addToCart('1','1 carte',40)">Ajouter au panier</button>
+            </div>
+            <div class="pricing-card popular fade-in fade-in-d1">
+                <div class="popular-badge">POPULAIRE</div>
+                <div class="pricing-name">2 cartes</div>
+                <div class="pricing-price">70€</div>
+                <div class="pricing-per">Soit 35€ par carte</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 2 cartes NFC</li>
+                    <li><span class="check">✓</span> Liens pré-configurés</li>
+                    <li><span class="check">✓</span> Configuration offerte</li>
+                    <li><span class="check">✓</span> Livraison offerte*</li>
+                </ul>
+                <button class="btn btn-primary" onclick="addToCart('2','2 cartes',70)">Ajouter au panier</button>
+            </div>
+            <div class="pricing-card fade-in fade-in-d2">
+                <div class="pricing-name">3 cartes</div>
+                <div class="pricing-price">90€</div>
+                <div class="pricing-per">Soit 30€ par carte</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> 3 cartes NFC</li>
+                    <li><span class="check">✓</span> Liens pré-configurés</li>
+                    <li><span class="check">✓</span> Configuration offerte</li>
+                    <li><span class="check">✓</span> Livraison offerte*</li>
+                    <li><span class="check">✓</span> Support client</li>
+                </ul>
+                <button class="btn btn-outline" onclick="addToCart('3','3 cartes',90)">Ajouter au panier</button>
+            </div>
+        </div>
+        <p style="margin-top:20px;color:var(--text-muted);font-size:.85rem;">Une seule formule par commande — pour combiner ou dépasser 3 cartes, direction le devis sur-mesure ci-dessous.</p>
+    </div>
+</section>
+
+<!-- ===== DEVIS SUR-MESURE ===== -->
+<section class="section" id="devis" style="padding-top:0;">
+    <div class="container">
+        <div class="devis-card fade-in">
+            <div class="devis-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>
+            </div>
+            <div class="devis-text">
+                <h3>Besoin de plusieurs formules ou de plus de 3 cartes ?</h3>
+                <p>Plusieurs sites, une franchise, une grande équipe : décrivez votre besoin ci-dessous, je vous envoie un devis adapté sous 24h.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openDevis()">Demander un devis</button>
+        </div>
+    </div>
+</section>
+
+<!-- ===== POUR QUI ===== -->
+<section class="section" style="background:#0d0d0d;">
+    <div class="container text-center">
+        <h2 class="section-title">Pour qui ?</h2>
+        <div class="grid-3" style="max-width:700px;margin:48px auto 0;">
+            <div class="tile fade-in" style="text-align:center;"><div style="margin-bottom:14px;display:flex;justify-content:center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg></div><h3>Restaurants & Cafés</h3></div>
+            <div class="tile fade-in fade-in-d1" style="text-align:center;"><div style="margin-bottom:14px;display:flex;justify-content:center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"></path><path d="M4 9v10a1 1 0 0 0 1 1h4v-6h6v6h4a1 1 0 0 0 1-1V9"></path><path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"></path></svg></div><h3>Commerces de proximité</h3></div>
+            <div class="tile fade-in fade-in-d2" style="text-align:center;"><div style="margin-bottom:14px;display:flex;justify-content:center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 1 0-5.66 5.66L2 19v3h3l7.04-7.04a4 4 0 0 0 5.66-5.66l-2.83 2.83-2-2z"></path></svg></div><h3>Artisans & Prestataires</h3></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== LIVRAISON ===== -->
+<section class="section" id="livraison">
+    <div class="container text-center">
+        <h2 class="section-title">Livraison</h2>
+        <div class="delivery-card">
+            <h3 style="display:flex;align-items:center;justify-content:center;gap:10px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="14" height="11"></rect><path d="M15 9h4l3 3v5h-7z"></path><circle cx="6" cy="19" r="2"></circle><circle cx="17.5" cy="19" r="2"></circle></svg> Livraison locale</h3>
+            <p>Je livre <span class="badge">gratuitement</span> dans <strong>Lille et ses alentours</strong>. La carte est <strong>déjà configurée</strong> avant la livraison. Vous la posez, c'est prêt.</p>
+            <br>
+            <p><strong>Vous êtes plus loin ?</strong> <a href="#contact" style="color:#fff;text-decoration:underline;">Contactez-moi</a>, on trouve une solution.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="section" style="background:#0d0d0d;" id="faq">
+    <div class="container text-center">
+        <h2 class="section-title">FAQ</h2>
+        <div class="faq-list">
+            <div class="faq-item open">
+                <button class="faq-question">Qu'est-ce que le NFC ?<span class="icon">+</span></button>
+                <div class="faq-answer">Le NFC permet à deux appareils de communiquer à très courte distance. Quand votre client pose son smartphone sur la carte, la page Google Review s'ouvre automatiquement.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Faut-il installer une application ?<span class="icon">+</span></button>
+                <div class="faq-answer">Non. Tous les smartphones récents intègrent le NFC. Il suffit de déverrouiller le téléphone et de le poser sur la carte.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Quels téléphones sont compatibles ?<span class="icon">+</span></button>
+                <div class="faq-answer">Tous les iPhone depuis l'iPhone 7 (2016) et la quasi-totalité des Android depuis 2015.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Puis-je changer le lien plus tard ?<span class="icon">+</span></button>
+                <div class="faq-answer">Oui. Les cartes sont reprogrammables sans limite. Contactez-moi et c'est fait en 5 minutes.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Y a-t-il des frais cachés ?<span class="icon">+</span></button>
+                <div class="faq-answer">Non. Vous payez une fois, c'est tout. Pas d'abonnement, pas de commission, pas de frais récurrents.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="section cta-section" id="contact">
+    <div class="container">
+        <h2 class="section-title">Prêt à booster vos avis ?</h2>
+        <p style="color:var(--text-light);max-width:480px;margin:0 auto 24px;font-size:1rem;line-height:1.7;">Commandez vos cartes NFC. Configuration incluse, livraison offerte sur Lille.</p>
+        <div class="cta-contact">
+            <span style="display:inline-flex;align-items:center;gap:8px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><path d="m4 6 8 7 8-7"></path></svg> <a href="mailto:equinzain@gmail.com">equinzain@gmail.com</a></span>
+        </div>
+        <p style="margin-top:16px;color:var(--text-muted);font-size:.85rem;">Hors secteur Lille ? Contactez-moi pour qu'on s'arrange.</p>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <a href="#" style="font-size:1.1rem;font-weight:700;color:#f3f4f6;display:flex;align-items:center;gap:8px;"><svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"></rect><path d="M14 10.5a2.8 2.8 0 0 1 0 4"></path><path d="M17 8.5a5.8 5.8 0 0 1 0 8"></path></svg> Cartes NFC Avis</a>
+                <p>La carte NFC qui transforme vos clients en avis Google 5★.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigation</h4>
+                <a href="#offres">Offres</a>
+                <a href="#devis">Devis</a>
+                <a href="#livraison">Livraison</a>
+                <a href="#faq">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <a href="mailto:equinzain@gmail.com">equinzain@gmail.com</a>
+            </div>
+        </div>
+        <div class="footer-bottom"><span>© 2025</span></div>
+    </div>
+</footer>
+
+<!-- ===== CART DRAWER ===== -->
+<div class="cart-overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()">
+    <div class="cart-drawer">
+        <div class="cart-header">
+            <h2 id="cartTitle">Votre panier</h2>
+            <button class="order-close" onclick="closeCart()">✕</button>
+        </div>
+
+        <div id="cartView">
+            <div id="cartEmpty" class="cart-empty" style="color:var(--text-muted);"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <p>Votre panier est vide.</p>
+                <button class="btn btn-outline" style="margin-top:16px;" onclick="closeCart()">Voir les offres</button>
+            </div>
+            <div id="cartItems" class="cart-items"></div>
+            <p class="cart-note" id="cartNote" style="display:none;">Une seule formule à la fois. Besoin de plusieurs formules ou de plus de 3 cartes ? <a href="#devis" onclick="closeCart()">Demandez un devis</a>.</p>
+            <div id="cartFooter" class="cart-footer" style="display:none;">
+                <div class="order-total">
+                    <span style="font-weight:500;color:var(--text);">Total</span>
+                    <span class="order-total-price" id="cartTotal">0€</span>
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:14px;" onclick="goCheckout()">Commander</button>
+                <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:8px;">* Livraison offerte sur Lille et alentours.</p>
+            </div>
+        </div>
+
+        <form id="checkoutView" class="order-form" style="display:none;" onsubmit="return submitOrder(event)">
+            <button type="button" class="cart-back" onclick="backToCart()">← Retour au panier</button>
+            <div>
+                <label>Entreprise *</label>
+                <input type="text" id="orderBusiness" placeholder="Nom de l'entreprise" required>
+            </div>
+            <div>
+                <label>Nom & Prénom *</label>
+                <input type="text" id="orderName" placeholder="Jean Dupont" required>
+            </div>
+            <div>
+                <label>Email *</label>
+                <input type="email" id="orderEmail" placeholder="contact@example.fr" required>
+            </div>
+            <div>
+                <label>Téléphone *</label>
+                <input type="tel" id="orderPhone" placeholder="06 00 00 00 00" required>
+            </div>
+            <div>
+                <label>Adresse de livraison *</label>
+                <input type="text" id="orderAddress" placeholder="15 Rue de la Paix, 59000 Lille" required>
+            </div>
+            <div>
+                <label>Lien Google Review (optionnel)</label>
+                <input type="text" id="orderLink" placeholder="https://g.page/r/...">
+                <p style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Pas de lien ? Je vous aide gratuitement.</p>
+            </div>
+            <div>
+                <label>Message (optionnel)</label>
+                <textarea id="orderMessage" placeholder="Questions, disponibilités..."></textarea>
+            </div>
+            <div class="order-total">
+                <span style="font-weight:500;color:var(--text);">Total</span>
+                <span class="order-total-price" id="checkoutTotal">0€</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Envoyer la commande</button>
+        </form>
+
+        <div class="order-success" id="orderSuccess">
+            <div class="icon" style="width:44px;height:44px;margin:0 auto 12px;color:#22c55e;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg></div>
+            <h3>Commande envoyée</h3>
+            <p style="color:var(--text-light);margin-top:6px;">Je vous recontacte sous 24h.</p>
+            <br>
+            <button class="btn btn-outline" onclick="closeCart()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DEVIS MODAL ===== -->
+<div class="cart-overlay" id="devisOverlay" onclick="if(event.target===this)closeDevis()">
+    <div class="cart-drawer">
+        <div class="cart-header">
+            <h2 id="devisTitle">Demande de devis</h2>
+            <button class="order-close" onclick="closeDevis()">✕</button>
+        </div>
+
+        <form id="devisForm" class="order-form" onsubmit="return submitDevis(event)">
+            <p style="font-size:.82rem;color:var(--text-light);line-height:1.6;margin-top:-8px;">Décrivez votre besoin, je vous réponds par email sous 24h avec un devis adapté.</p>
+            <div>
+                <label>Entreprise *</label>
+                <input type="text" id="devisBusiness" placeholder="Nom de l'entreprise" required>
+            </div>
+            <div>
+                <label>Nom & Prénom *</label>
+                <input type="text" id="devisName" placeholder="Jean Dupont" required>
+            </div>
+            <div>
+                <label>Email *</label>
+                <input type="email" id="devisEmail" placeholder="contact@example.fr" required>
+            </div>
+            <div>
+                <label>Nombre de cartes souhaité *</label>
+                <input type="text" id="devisQty" placeholder="Ex : 8 cartes pour 3 boutiques" required>
+            </div>
+            <div>
+                <label>Adresse de livraison (optionnel)</label>
+                <input type="text" id="devisAddress" placeholder="Ville ou adresse">
+            </div>
+            <div>
+                <label>Message (optionnel)</label>
+                <textarea id="devisMessage" placeholder="Précisions sur votre besoin..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Envoyer ma demande</button>
+        </form>
+
+        <div class="order-success" id="devisSuccess">
+            <div class="icon" style="width:44px;height:44px;margin:0 auto 12px;color:#22c55e;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg></div>
+            <h3>Demande envoyée</h3>
+            <p style="color:var(--text-light);margin-top:6px;">Je vous recontacte par email sous 24h.</p>
+            <br>
+            <button class="btn btn-outline" onclick="closeDevis()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var CONTACT_EMAIL = 'equinzain@gmail.com';
+var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
+function sendToWebhook(data){
+    try {
+        fetch(MAKE_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).catch(function(err){ console.warn('Webhook indisponible (normal si le site est encore sur claude.ai) :', err); });
+    } catch(err) { console.warn('Webhook indisponible :', err); }
+}
+var devisOverlay = document.getElementById('devisOverlay'),
+    devisForm = document.getElementById('devisForm'),
+    devisSuccess = document.getElementById('devisSuccess');
+
+function openDevis(){ devisOverlay.classList.add('open'); document.body.style.overflow='hidden'; devisForm.style.display='flex'; devisSuccess.classList.remove('show'); }
+function closeDevis(){ devisOverlay.classList.remove('open'); document.body.style.overflow=''; }
+function submitDevis(e){
+    e.preventDefault();
+    var b=document.getElementById('devisBusiness').value,
+        n=document.getElementById('devisName').value,
+        m=document.getElementById('devisEmail').value,
+        q=document.getElementById('devisQty').value,
+        a=document.getElementById('devisAddress').value,
+        g=document.getElementById('devisMessage').value;
+    sendToWebhook({
+        type: 'Devis',
+        entreprise: b,
+        nom: n,
+        email: m,
+        quantite: q,
+        adresse: a || 'Non précisée',
+        message: g || 'Aucun',
+        statut: 'Nouvelle'
+    });
+    window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Demande de devis - ' + b) +
+        '&body=' + encodeURIComponent('DEMANDE DE DEVIS\nEntreprise: ' + b + '\nContact: ' + n + '\nEmail: ' + m + '\nQuantité souhaitée: ' + q + '\nAdresse: ' + (a||'Non précisée') + '\nMessage: ' + (g||'Aucun'));
+    devisForm.style.display='none';
+    devisSuccess.classList.add('show');
+    return false;
+}
+</script>
+
+<script>
+/* ===== CART ===== */
+var CART = [];
+try { var saved = localStorage.getItem('nfc_cart'); if (saved) CART = JSON.parse(saved); } catch(e) { CART = []; }
+
+var cartOverlay = document.getElementById('cartOverlay'),
+    cartItemsEl = document.getElementById('cartItems'),
+    cartEmptyEl = document.getElementById('cartEmpty'),
+    cartFooterEl = document.getElementById('cartFooter'),
+    cartView = document.getElementById('cartView'),
+    checkoutView = document.getElementById('checkoutView'),
+    orderSuccess = document.getElementById('orderSuccess'),
+    cartTitle = document.getElementById('cartTitle');
+
+function saveCart(){ try{ localStorage.setItem('nfc_cart', JSON.stringify(CART)); }catch(e){} }
+
+function addToCart(id, label, price){
+    CART = [{ id: id, label: label, price: price, qty: 1 }];
+    saveCart(); renderCart(); openCart();
+}
+function removeItem(id){ CART = CART.filter(function(i){ return i.id !== id; }); saveCart(); renderCart(); }
+
+function cartTotal(){ return CART.reduce(function(s,i){ return s + i.price * i.qty; }, 0); }
+
+function renderCart(){
+    var count = CART.reduce(function(s,i){ return s + i.qty; }, 0);
+    document.getElementById('cartCount').textContent = count;
+    if (CART.length === 0) {
+        cartEmptyEl.style.display = 'block';
+        cartItemsEl.style.display = 'none';
+        cartFooterEl.style.display = 'none';
+        document.getElementById('cartNote').style.display = 'none';
+        return;
+    }
+    cartEmptyEl.style.display = 'none';
+    cartItemsEl.style.display = 'block';
+    cartFooterEl.style.display = 'block';
+    document.getElementById('cartNote').style.display = 'block';
+    cartItemsEl.innerHTML = CART.map(function(i){
+        return '<div class="cart-item">' +
+            '<div class="cart-item-info"><strong>' + i.label + '</strong><span>Formule unique</span></div>' +
+            '<div class="cart-item-price">' + (i.price * i.qty) + '€</div>' +
+            '<button class="cart-item-remove" onclick="removeItem(\'' + i.id + '\')" aria-label="Retirer">✕</button>' +
+        '</div>';
+    }).join('');
+    document.getElementById('cartTotal').textContent = cartTotal() + '€';
+}
+
+function openCart(){ cartOverlay.classList.add('open'); document.body.style.overflow='hidden'; showCartStep(); renderCart(); }
+function closeCart(){ cartOverlay.classList.remove('open'); document.body.style.overflow=''; }
+function showCartStep(){ cartTitle.textContent='Votre panier'; cartView.style.display='block'; checkoutView.style.display='none'; orderSuccess.classList.remove('show'); }
+function goCheckout(){ if (CART.length===0) return; cartTitle.textContent='Vos coordonnées'; cartView.style.display='none'; checkoutView.style.display='flex'; document.getElementById('checkoutTotal').textContent = cartTotal() + '€'; }
+function backToCart(){ showCartStep(); }
+
+function submitOrder(e){
+    e.preventDefault();
+    var b=document.getElementById('orderBusiness').value,
+        n=document.getElementById('orderName').value,
+        m=document.getElementById('orderEmail').value,
+        p=document.getElementById('orderPhone').value,
+        a=document.getElementById('orderAddress').value,
+        k=document.getElementById('orderLink').value,
+        g=document.getElementById('orderMessage').value;
+    var lines = CART.map(function(i){ return '- ' + i.label + ' x' + i.qty + ' = ' + (i.price*i.qty) + '€'; }).join('\n');
+    var formule = CART.length ? CART[0].label : '';
+    sendToWebhook({
+        type: 'Commande',
+        formule: formule,
+        prix: cartTotal(),
+        entreprise: b,
+        nom: n,
+        email: m,
+        telephone: p,
+        adresse: a,
+        lienGoogle: k || 'Non',
+        message: g || 'Aucun',
+        statut: 'Nouvelle'
+    });
+    window.location.href = 'mailto:equinzain@gmail.com?subject=' + encodeURIComponent('Commande NFC - ' + b) +
+        '&body=' + encodeURIComponent('NOUVELLE COMMANDE\n' + lines + '\nTotal: ' + cartTotal() + '€\n\nEntreprise: ' + b + '\nClient: ' + n + '\nEmail: ' + m + '\nTel: ' + p + '\nAdresse: ' + a + '\nGoogle: ' + (k||'Non') + '\nMessage: ' + (g||'Aucun'));
+    checkoutView.style.display='none';
+    orderSuccess.classList.add('show');
+    CART = []; saveCart(); renderCart();
+    return false;
+}
+renderCart();
+document.getElementById('menuToggle').addEventListener('click',function(){this.classList.toggle('active');document.getElementById('navLinks').classList.toggle('open');});
+document.querySelectorAll('#navLinks a').forEach(function(l){l.addEventListener('click',function(){document.getElementById('menuToggle').classList.remove('active');document.getElementById('navLinks').classList.remove('open');});});
+document.querySelectorAll('.faq-question').forEach(function(b){b.addEventListener('click',function(){var p=this.parentElement,o=p.classList.contains('open');document.querySelectorAll('.faq-item.open').forEach(function(e){e.classList.remove('open');});if(!o)p.classList.add('open');});});
+var V=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');V.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.fade-in').forEach(function(e){V.observe(e);});
+</script>
+</body>
+</html>
