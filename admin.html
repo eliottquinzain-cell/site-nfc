@@ -331,6 +331,17 @@
             justify-content: center;
             padding: 20px;
         }
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            background: #000000 !important;
+            backdrop-filter: none !important;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
         .modal-card {
             background: #141414;
             border: 1px solid var(--border-light);
@@ -393,16 +404,16 @@
 <body>
 
     <!-- 1. MULTI-ADMIN SECURE LOGIN MODAL -->
-    <div class="modal-overlay" id="authOverlay" style="display:none;">
+    <div class="modal-overlay" id="authOverlay">
         <div class="modal-card" style="max-width:440px;">
             <div style="font-size:2rem;margin-bottom:10px;">🔐</div>
             <h2>Console d'Administration</h2>
-            <p class="sub">Authentification requise &bull; 3 comptes administrateurs sécurisés</p>
+            <p class="sub">Authentification requise &bull; Espace sécurisé</p>
 
             <form onsubmit="return handleAdminLogin(event)">
                 <div class="form-group">
                     <label for="adminUsername">Identifiant Administrateur</label>
-                    <input type="text" id="adminUsername" class="form-input" placeholder="eliott.admin, atelier.admin ou support.admin" required autocomplete="username">
+                    <input type="text" id="adminUsername" class="form-input" placeholder="Votre identifiant" required autocomplete="username">
                 </div>
 
                 <div class="form-group">
@@ -416,15 +427,6 @@
 
                 <p id="authError" style="color:var(--danger);font-size:.8rem;text-align:center;margin-top:12px;display:none;"></p>
             </form>
-
-            <div style="margin-top:20px;padding-top:16px;border-top:1px solid #222;font-size:.76rem;color:var(--text-muted);">
-                <div style="font-weight:600;color:#bbb;margin-bottom:6px;">Accès habilités :</div>
-                <div style="display:flex;flex-direction:column;gap:4px;">
-                    <span>👑 <strong>eliott.admin</strong> : Direction & Super Admin</span>
-                    <span>⚡ <strong>atelier.admin</strong> : Production & Programmation NFC</span>
-                    <span>🛡️ <strong>support.admin</strong> : Logistique, Suivi & SAV</span>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -432,7 +434,7 @@
     <div class="modal-overlay" id="customModal" style="display:none;" onclick="if(event.target===this)closeCustomModal()">
         <div class="modal-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <h2 id="modalCompanyTitle">Personnaliser la commande</h2>
+                <h2 id="modalCompanyTitle">⚙️ Configuration de la commande</h2>
                 <button onclick="closeCustomModal()" style="background:none;border:none;color:#aaa;font-size:1.2rem;cursor:pointer;">✕</button>
             </div>
             <p class="sub" id="modalOrderRefSub">Réf: TAP-XXXX</p>
@@ -441,12 +443,12 @@
                 <input type="hidden" id="editOrderId">
 
                 <div class="form-group">
-                    <label for="editEtape">Étape de fabrication & livraison</label>
+                    <label for="editEtape">Étape de configuration & livraison</label>
                     <select id="editEtape" class="form-select">
                         <option value="1. Prise en charge">1. 📋 Prise en charge</option>
                         <option value="2. Puces NFC programmées">2. ⚡ Puces NFC programmées</option>
-                        <option value="3. Personnalisation & Gravure">3. 🎨 Personnalisation & Gravure</option>
-                        <option value="4. Contrôle qualité validé">4. 🔍 Contrôle qualité validé</option>
+                        <option value="3. Configuration du support">3. ⚙️ Configuration du support</option>
+                        <option value="4. Contrôle technique validé">4. 🔍 Contrôle technique validé</option>
                         <option value="5. En cours de livraison">5. 🚚 En cours de livraison</option>
                         <option value="6. Livrée & Confirmée">6. ✅ Livrée & Confirmée</option>
                     </select>
@@ -461,8 +463,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="editNotes">Notes atelier & Instructions de personnalisation</label>
-                    <textarea id="editNotes" class="form-textarea" placeholder="Ex. : Logo noir mat centré, 2 cartes comptoir caisse + 1 terrasse, client disponible avant 11h..."></textarea>
+                    <label for="editNotes">Notes de configuration & Instructions techniques</label>
+                    <textarea id="editNotes" class="form-textarea" placeholder="Ex. : Format URL Google Review raccourci, encodage NTAG213 validé, 2 cartes comptoir caisse + 1 terrasse, client disponible avant 11h..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -553,7 +555,7 @@
         <div class="tabs-bar">
             <div class="tabs-group">
                 <button class="tab-btn active" id="tabOrders" onclick="switchTab('orders')">
-                    <span>📦 Commandes & Production</span>
+                    <span>📦 Commandes & Configuration</span>
                     <span class="tab-count" id="countOrders">0</span>
                 </button>
                 <button class="tab-btn" id="tabDevis" onclick="switchTab('devis')">
@@ -612,8 +614,8 @@
         var STAGES = [
             '1. Prise en charge',
             '2. Puces NFC programmées',
-            '3. Personnalisation & Gravure',
-            '4. Contrôle qualité validé',
+            '3. Configuration du support',
+            '4. Contrôle technique validé',
             '5. En cours de livraison',
             '6. Livrée & Confirmée'
         ];
@@ -860,7 +862,7 @@
             var f = order.fields || {};
 
             document.getElementById('editOrderId').value = recordId;
-            document.getElementById('modalCompanyTitle').textContent = '🎨 ' + (f.Entreprise || 'Personnalisation');
+            document.getElementById('modalCompanyTitle').textContent = '⚙️ ' + (f.Entreprise || 'Configuration');
             document.getElementById('modalOrderRefSub').textContent = 'Client : ' + (f['Nom et prénom'] || 'Inconnu') + ' &bull; Réf: ' + (f['Code Client'] || recordId);
 
             document.getElementById('editEtape').value = f['Etape commande'] || '1. Prise en charge';
@@ -1010,7 +1012,14 @@
                     var isConfirmed = f['Reception client'] === true;
                     var curStage = f['Etape commande'] || '1. Prise en charge';
                     var stageIdx = STAGES.indexOf(curStage);
-                    if (stageIdx === -1) stageIdx = 0;
+                    if (stageIdx === -1) {
+                        var matchNum = parseInt(curStage, 10);
+                        if (!isNaN(matchNum) && matchNum >= 1 && matchNum <= STAGES.length) {
+                            stageIdx = matchNum - 1;
+                        } else {
+                            stageIdx = 0;
+                        }
+                    }
 
                     // Stepper HTML
                     var stepperHtml = STAGES.map(function(stg, idx) {
@@ -1062,13 +1071,13 @@
                             '</span></div>' +
                         '</div>' +
 
-                        (f['Notes atelier'] ? '<div class="workshop-notes-box"><strong>🎨 Notes atelier & Personnalisation :</strong> ' + escapeHtml(f['Notes atelier']) + '</div>' : '') +
+                        (f['Notes atelier'] ? '<div class="workshop-notes-box"><strong>⚙️ Notes de configuration :</strong> ' + escapeHtml(f['Notes atelier']) + '</div>' : '') +
                         (f['Date livraison prevue'] ? '<div style="font-size:.78rem;color:#38bdf8;background:rgba(56,189,248,.08);padding:6px 12px;border-radius:6px;">🚚 <strong>Livraison prévue :</strong> ' + escapeHtml(f['Date livraison prevue']) + '</div>' : '') +
                         (f.Message ? '<div class="order-message-box"><strong>Instructions du client :</strong> ' + escapeHtml(f.Message) + '</div>' : '') +
 
                         '<div class="order-actions">' +
                             '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-                                '<button class="btn-action" style="background:#262626;color:#fff;border-color:#444;" onclick="openCustomizeModal(\'' + o.id + '\')">🎨 Personnaliser / Modifier</button>' +
+                                '<button class="btn-action" style="background:#262626;color:#fff;border-color:#444;" onclick="openCustomizeModal(\'' + o.id + '\')">⚙️ Configurer / Modifier</button>' +
                                 '<a href="tel:' + escapeHtml(f.Telephone) + '" class="btn-action">📞 Appeler</a>' +
                                 '<a href="mailto:' + escapeHtml(f.Email) + '" class="btn-action">✉️ Email</a>' +
                             '</div>' +
