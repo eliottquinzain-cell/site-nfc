@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapTapNFC | Tableau de Bord Commandes & Devis</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0a0a; color: #d1d5db; min-height: 100vh; line-height: 1.5; }
+        a { text-decoration: none; color: inherit; }
+        button, input, select { font-family: inherit; }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --bg-card-hover: #141414;
+            --border: #1f1f1f;
+            --border-light: #2a2a2a;
+            --text: #d1d5db;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --accent: #22c55e;
+            --accent-bg: rgba(34, 197, 94, 0.12);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+
+        .container { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+
+        /* HEADER */
+        .admin-header { background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 14px 0; }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #fff; font-size: 1.05rem; }
+        .brand-badge { background: #1f1f1f; border: 1px solid #333; font-size: .7rem; padding: 2px 8px; border-radius: 6px; color: #9ca3af; font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        
+        .live-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: #22c55e; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); padding: 4px 10px; border-radius: 50px; font-weight: 600; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.85); } }
+
+        .btn-action { background: #141414; border: 1px solid var(--border); color: #f3f4f6; font-size: .82rem; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-action:hover { background: #1f1f1f; border-color: #444; }
+        .btn-refresh svg { transition: transform .3s; }
+        .btn-refresh.spinning svg { animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* KPI METRICS */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #333, transparent); }
+        .metric-card.accent::before { background: linear-gradient(90deg, #22c55e, #10b981); }
+        .metric-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-light); font-weight: 600; }
+        .metric-value { font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -.02em; }
+        .metric-sub { font-size: .75rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+        /* NAVIGATION TABS */
+        .tabs-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 20px; }
+        .tabs-group { display: flex; gap: 8px; }
+        .tab-btn { background: transparent; border: 1px solid transparent; color: var(--text-light); font-size: .88rem; font-weight: 600; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+        .tab-btn:hover { color: #fff; background: rgba(255,255,255,.03); }
+        .tab-btn.active { color: #fff; background: #171717; border-color: var(--border-light); }
+        .tab-count { background: #262626; color: #d4d4d4; font-size: .7rem; padding: 1px 7px; border-radius: 50px; font-weight: 700; }
+        .tab-btn.active .tab-count { background: #fff; color: #0a0a0a; }
+
+        .filter-select { background: #111; border: 1px solid var(--border); color: #f3f4f6; font-size: .82rem; padding: 7px 12px; border-radius: 8px; outline: none; }
+        .filter-select:focus { border-color: #555; }
+
+        /* LIST / CARDS */
+        .cards-list { display: flex; flex-direction: column; gap: 14px; }
+        .order-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; transition: border-color .2s; display: flex; flex-direction: column; gap: 14px; }
+        .order-card:hover { border-color: #333; }
+        .order-card.new-order { border-left: 4px solid #22c55e; }
+
+        .order-card-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+        .order-company { font-size: 1.15rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .order-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: .78rem; color: var(--text-muted); }
+        .order-price-tag { font-size: 1.15rem; font-weight: 800; color: #fff; background: #1a1a1a; padding: 4px 12px; border-radius: 8px; border: 1px solid #333; }
+
+        .status-badge { font-size: .74rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; border: 1px solid transparent; transition: all .2s; }
+        .status-badge.status-nouvelle { background: rgba(34,197,94,.15); color: #4ade80; border-color: rgba(34,197,94,.3); }
+        .status-badge.status-en-cours { background: rgba(245,158,11,.15); color: #fbbf24; border-color: rgba(245,158,11,.3); }
+        .status-badge.status-livre { background: rgba(59,130,246,.15); color: #60a5fa; border-color: rgba(59,130,246,.3); }
+        .status-badge.status-traite { background: rgba(147,51,234,.15); color: #c084fc; border-color: rgba(147,51,234,.3); }
+
+        .order-details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; background: #0c0c0c; border: 1px solid #1a1a1a; padding: 14px; border-radius: 10px; font-size: .83rem; }
+        .detail-item { display: flex; flex-direction: column; gap: 3px; }
+        .detail-label { font-size: .72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: .04em; }
+        .detail-value { color: #f3f4f6; font-weight: 500; word-break: break-word; }
+        .detail-value a { color: #60a5fa; text-decoration: underline; text-underline-offset: 2px; }
+        .detail-value a:hover { color: #93c5fd; }
+
+        .order-message-box { background: rgba(255,255,255,.02); border-left: 3px solid #444; padding: 10px 14px; border-radius: 6px; font-size: .82rem; color: var(--text-light); }
+        .order-message-box strong { color: #fff; font-size: .75rem; text-transform: uppercase; display: block; margin-bottom: 2px; }
+
+        .order-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 10px; border-top: 1px solid #1a1a1a; }
+        .status-updater { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--text-muted); }
+
+        /* EMPTY STATE */
+        .empty-state { text-align: center; padding: 60px 20px; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 14px; color: var(--text-muted); }
+        .empty-state svg { margin-bottom: 12px; opacity: .4; }
+        .empty-state h3 { font-size: 1.1rem; color: #f3f4f6; margin-bottom: 4px; }
+
+        /* AUTH MODAL */
+        .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: #111; border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,.9); }
+        .auth-card h2 { font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .auth-card p { font-size: .85rem; color: var(--text-light); line-height: 1.6; margin-bottom: 20px; }
+        .auth-input { width: 100%; padding: 12px 14px; background: #0a0a0a; border: 1.5px solid var(--border-light); border-radius: 9px; color: #fff; font-size: .9rem; margin-bottom: 14px; outline: none; }
+        .auth-input:focus { border-color: #555; }
+        .auth-btn { width: 100%; padding: 12px; background: #fff; color: #0a0a0a; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; transition: all .2s; font-size: .9rem; }
+        .auth-btn:hover { background: #e5e5e5; }
+        .auth-error { color: #ef4444; font-size: .8rem; margin-top: 10px; display: none; text-align: center; }
+
+        @media (max-width: 640px) {
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .order-card { padding: 16px; }
+            .order-details-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH MODAL -->
+    <div class="auth-overlay" id="authOverlay" style="display:none;">
+        <div class="auth-card">
+            <div style="font-size:1.8rem;margin-bottom:12px;">🔒</div>
+            <h2>Espace Admin TapTapNFC</h2>
+            <p>Accès sécurisé à votre base de commandes en temps réel. Entrez votre clé d'accès Airtable pour vous connecter.</p>
+            <input type="password" id="tokenInput" class="auth-input" placeholder="pat... (Clé Airtable)" autocomplete="off">
+            <button class="auth-btn" onclick="loginWithToken()">Se connecter</button>
+            <p id="authError" class="auth-error">Clé invalide ou permissions insuffisantes.</p>
+            <div style="margin-top:16px;font-size:.74rem;color:var(--text-muted);text-align:center;">
+                La clé est enregistrée uniquement dans votre navigateur local.
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <header class="admin-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <span>TapTapNFC</span>
+                <span class="brand-badge">Admin Live</span>
+                <a href="/" target="_blank" style="font-size:.78rem;color:var(--text-muted);text-decoration:underline;margin-left:6px;">Voir le site ↗</a>
+            </div>
+
+            <div class="header-actions">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span>En direct</span>
+                </div>
+                <button class="btn-action btn-refresh" id="refreshBtn" onclick="manualRefresh()" title="Rafraîchir les données">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    <span>Actualiser</span>
+                </button>
+                <button class="btn-action" onclick="logout()" title="Déconnexion" style="color:var(--text-muted);">
+                    ✕
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top:10px;padding-bottom:60px;">
+        
+        <!-- METRICS -->
+        <section class="metrics-grid">
+            <div class="metric-card accent">
+                <span class="metric-title">Chiffre d'affaires total</span>
+                <div class="metric-value" id="kpiRevenue">0€</div>
+                <div class="metric-sub">✓ Commandes validées</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-title">Total Commandes</span>
+                <div class="metric-value" id="kpiOrders">0</div>
+                <div class="metric-sub" id="kpiNewOrders">0 nouvelle(s)</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-title">Cartes commandées</span>
+                <div class="metric-value" id="kpiCards">0</div>
+                <div class="metric-sub">Puces NFC à préparer</div>
+            </div>
+            <div class="metric-card">
+                <span class="metric-title">Demandes de devis</span>
+                <div class="metric-value" id="kpiDevis">0</div>
+                <div class="metric-sub" id="kpiNewDevis">0 en attente</div>
+            </div>
+        </section>
+
+        <!-- TABS -->
+        <div class="tabs-bar">
+            <div class="tabs-group">
+                <button class="tab-btn active" id="tabOrders" onclick="switchTab('orders')">
+                    <span>📦 Commandes</span>
+                    <span class="tab-count" id="countOrders">0</span>
+                </button>
+                <button class="tab-btn" id="tabDevis" onclick="switchTab('devis')">
+                    <span>📋 Demandes de devis</span>
+                    <span class="tab-count" id="countDevis">0</span>
+                </button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;">
+                <label for="statusFilter" style="font-size:.78rem;color:var(--text-muted);">Statut :</label>
+                <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                    <option value="ALL">Tous les statuts</option>
+                    <option value="Nouvelle">Nouvelles</option>
+                    <option value="En cours">En cours</option>
+                    <option value="Livré">Livrées</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- CONTENT LIST -->
+        <div id="loadingIndicator" style="text-align:center;padding:40px;color:var(--text-muted);">
+            Chargement des commandes en temps réel...
+        </div>
+
+        <div id="ordersContainer" class="cards-list" style="display:none;"></div>
+        <div id="devisContainer" class="cards-list" style="display:none;"></div>
+
+        <div id="emptyContainer" class="empty-state" style="display:none;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            <h3>Aucun enregistrement pour le moment</h3>
+            <p>Les nouvelles commandes ou demandes de devis apparaîtront ici automatiquement.</p>
+        </div>
+
+    </main>
+
+    <script>
+        var BASE_ID = 'apptiTaUP2cOr59kx';
+        var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
+        var TABLE_DEVIS = 'tbl8jxUNNwo4oA2eq';
+
+        var CURRENT_TAB = 'orders';
+        var ORDERS = [];
+        var DEVIS = [];
+        var POLL_INTERVAL = 15000;
+        var pollTimer = null;
+
+        function getToken() {
+            var hashMatch = window.location.hash.match(/token=([^&]+)/);
+            if (hashMatch && hashMatch[1]) {
+                localStorage.setItem('nfc_admin_token', hashMatch[1]);
+                window.location.hash = '';
+                return hashMatch[1];
+            }
+            return localStorage.getItem('nfc_admin_token') || '';
+        }
+
+        async function verifyAndLoad() {
+            var token = getToken();
+            if (!token) {
+                document.getElementById('authOverlay').style.display = 'flex';
+                return;
+            }
+            document.getElementById('authOverlay').style.display = 'none';
+            await fetchAllData();
+            startPolling();
+        }
+
+        async function loginWithToken() {
+            var input = document.getElementById('tokenInput').value.trim();
+            var err = document.getElementById('authError');
+            if (!input) return;
+
+            try {
+                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?maxRecords=1', {
+                    headers: { 'Authorization': 'Bearer ' + input }
+                });
+                if (!res.ok) throw new Error('Token invalide');
+                localStorage.setItem('nfc_admin_token', input);
+                document.getElementById('authOverlay').style.display = 'none';
+                err.style.display = 'none';
+                await fetchAllData();
+                startPolling();
+            } catch(e) {
+                err.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vous déconnecter du tableau de bord ?')) {
+                localStorage.removeItem('nfc_admin_token');
+                clearInterval(pollTimer);
+                location.reload();
+            }
+        }
+
+        function formatDate(dStr) {
+            if (!dStr) return 'Date inconnue';
+            try {
+                var d = new Date(dStr);
+                return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            } catch(e) { return dStr; }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        async function fetchAllData() {
+            var token = getToken();
+            if (!token) return;
+
+            var refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) refreshBtn.classList.add('spinning');
+
+            try {
+                var [resCmd, resDev] = await Promise.all([
+                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    }),
+                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_DEVIS + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    })
+                ]);
+
+                if (resCmd.ok) {
+                    var dataCmd = await resCmd.json();
+                    ORDERS = (dataCmd.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                }
+                if (resDev.ok) {
+                    var dataDev = await resDev.json();
+                    DEVIS = (dataDev.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                }
+
+                updateKPIs();
+                renderView();
+            } catch(e) {
+                console.error('Erreur chargement données:', e);
+            } finally {
+                if (refreshBtn) refreshBtn.classList.remove('spinning');
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function updateKPIs() {
+            var revenue = ORDERS.reduce(function(acc, o) {
+                var p = parseFloat(o.fields.Prix) || 0;
+                return acc + p;
+            }, 0);
+
+            var totalCards = ORDERS.reduce(function(acc, o) {
+                var form = (o.fields.Formule || '').toLowerCase();
+                if (form.indexOf('1') !== -1) return acc + 1;
+                if (form.indexOf('2') !== -1) return acc + 2;
+                if (form.indexOf('3') !== -1) return acc + 3;
+                return acc + 1;
+            }, 0);
+
+            var newOrders = ORDERS.filter(function(o){
+                var st = o.fields.Statut;
+                var s = Array.isArray(st) ? st[0] : st;
+                return !s || s === 'Nouvelle';
+            }).length;
+
+            var newDevis = DEVIS.filter(function(d){
+                var st = d.fields.Statut;
+                var s = Array.isArray(st) ? st[0] : st;
+                return !s || s === 'Nouvelle';
+            }).length;
+
+            document.getElementById('kpiRevenue').textContent = revenue + '€';
+            document.getElementById('kpiOrders').textContent = ORDERS.length;
+            document.getElementById('kpiNewOrders').textContent = newOrders + ' nouvelle(s)';
+            document.getElementById('kpiCards').textContent = totalCards;
+            document.getElementById('kpiDevis').textContent = DEVIS.length;
+            document.getElementById('kpiNewDevis').textContent = newDevis + ' en attente';
+
+            document.getElementById('countOrders').textContent = ORDERS.length;
+            document.getElementById('countDevis').textContent = DEVIS.length;
+        }
+
+        function switchTab(tab) {
+            CURRENT_TAB = tab;
+            document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
+            document.getElementById('tabDevis').classList.toggle('active', tab === 'devis');
+            
+            var sel = document.getElementById('statusFilter');
+            if (tab === 'orders') {
+                sel.innerHTML = '<option value="ALL">Tous les statuts</option><option value="Nouvelle">Nouvelles</option><option value="En cours">En cours</option><option value="Livré">Livrées</option>';
+            } else {
+                sel.innerHTML = '<option value="ALL">Tous les statuts</option><option value="Nouvelle">Nouvelles</option><option value="En cours">En cours</option><option value="Devis envoyé">Devis envoyé</option><option value="Validé">Validé</option>';
+            }
+            renderView();
+        }
+
+        function applyFilters() {
+            renderView();
+        }
+
+        async function updateStatus(tableId, recordId, newStatus) {
+            var token = getToken();
+            if (!token) return;
+
+            try {
+                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + tableId + '/' + recordId, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: {
+                            'Statut': [newStatus]
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    await fetchAllData();
+                } else {
+                    alert('Erreur lors de la mise à jour du statut.');
+                }
+            } catch(err) {
+                alert('Erreur réseau.');
+            }
+        }
+
+        function renderView() {
+            var filterVal = document.getElementById('statusFilter').value;
+            var containerOrders = document.getElementById('ordersContainer');
+            var containerDevis = document.getElementById('devisContainer');
+            var empty = document.getElementById('emptyContainer');
+
+            if (CURRENT_TAB === 'orders') {
+                containerDevis.style.display = 'none';
+                var items = ORDERS.filter(function(o) {
+                    if (filterVal === 'ALL') return true;
+                    var st = o.fields.Statut;
+                    var s = Array.isArray(st) ? st[0] : st;
+                    return s === filterVal;
+                });
+
+                if (items.length === 0) {
+                    containerOrders.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+                containerOrders.style.display = 'flex';
+
+                containerOrders.innerHTML = items.map(function(o) {
+                    var f = o.fields || {};
+                    var st = f.Statut;
+                    var status = (Array.isArray(st) ? st[0] : st) || 'Nouvelle';
+                    var statusClass = 'status-' + status.toLowerCase().replace(/\s+/g, '-');
+                    var mapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent((f.Entreprise || '') + ' ' + (f.Adresse || ''));
+
+                    return '<div class="order-card ' + (status === 'Nouvelle' ? 'new-order' : '') + '">' +
+                        '<div class="order-card-header">' +
+                            '<div>' +
+                                '<div class="order-company">🏪 ' + escapeHtml(f.Entreprise) + '</div>' +
+                                '<div class="order-meta">' +
+                                    '<span>📅 ' + formatDate(f.Date) + '</span> &bull; ' +
+                                    '<span>' + escapeHtml(f.Formule || 'Formule NFC') + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div style="display:flex;align-items:center;gap:10px;">' +
+                                '<span class="status-badge ' + statusClass + '">' + escapeHtml(status) + '</span>' +
+                                '<div class="order-price-tag">' + (f.Prix ? f.Prix + '€' : '70€') + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="order-details-grid">' +
+                            '<div class="detail-item"><span class="detail-label">Client</span><span class="detail-value">👤 ' + escapeHtml(f['Nom et prénom'] || 'Non renseigné') + '</span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value"><a href="tel:' + escapeHtml(f.Telephone) + '">📞 ' + escapeHtml(f.Telephone || 'N/A') + '</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Email</span><span class="detail-value"><a href="mailto:' + escapeHtml(f.Email) + '">✉️ ' + escapeHtml(f.Email || 'N/A') + '</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Adresse de livraison</span><span class="detail-value">📍 ' + escapeHtml(f.Adresse || 'N/A') + ' &bull; <a href="' + mapsUrl + '" target="_blank">Google Maps ↗</a></span></div>' +
+                            (f.Lien ? '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Fiche Google Avis</span><span class="detail-value"><a href="' + escapeHtml(f.Lien) + '" target="_blank">🔗 ' + escapeHtml(f.Lien) + ' ↗</a></span></div>' : '') +
+                        '</div>' +
+                        (f.Message ? '<div class="order-message-box"><strong>Instructions client :</strong> ' + escapeHtml(f.Message) + '</div>' : '') +
+                        '<div class="order-actions">' +
+                            '<div class="status-updater">' +
+                                '<span>Changer le statut :</span>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;" onclick="updateStatus(\'' + TABLE_COMMANDES + '\', \'' + o.id + '\', \'En cours\')">En cours</button>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;background:#153821;border-color:#22c55e;color:#4ade80;" onclick="updateStatus(\'' + TABLE_COMMANDES + '\', \'' + o.id + '\', \'Livré\')">✓ Marquer Livré</button>' +
+                            '</div>' +
+                            '<div style="font-size:.72rem;color:var(--text-muted);">Réf: ' + o.id + '</div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+
+            } else {
+                containerOrders.style.display = 'none';
+                var itemsDev = DEVIS.filter(function(d) {
+                    if (filterVal === 'ALL') return true;
+                    var st = d.fields.Statut;
+                    var s = Array.isArray(st) ? st[0] : st;
+                    return s === filterVal;
+                });
+
+                if (itemsDev.length === 0) {
+                    containerDevis.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+                containerDevis.style.display = 'flex';
+
+                containerDevis.innerHTML = itemsDev.map(function(d) {
+                    var f = d.fields || {};
+                    var st = f.Statut;
+                    var status = (Array.isArray(st) ? st[0] : st) || 'Nouvelle';
+                    var statusClass = 'status-' + status.toLowerCase().replace(/\s+/g, '-');
+
+                    return '<div class="order-card ' + (status === 'Nouvelle' ? 'new-order' : '') + '">' +
+                        '<div class="order-card-header">' +
+                            '<div>' +
+                                '<div class="order-company">📋 ' + escapeHtml(f.Entreprise) + '</div>' +
+                                '<div class="order-meta">' +
+                                    '<span>📅 ' + formatDate(f.Date) + '</span> &bull; ' +
+                                    '<span>Demande sur mesure</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div>' +
+                                '<span class="status-badge ' + statusClass + '">' + escapeHtml(status) + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="order-details-grid">' +
+                            '<div class="detail-item"><span class="detail-label">Contact</span><span class="detail-value">👤 ' + escapeHtml(f['Nom et prénom'] || 'Non renseigné') + '</span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Quantité souhaitée</span><span class="detail-value">🎯 <strong>' + escapeHtml(f.Quantite || 'N/A') + '</strong></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value"><a href="tel:' + escapeHtml(f.Telephone) + '">📞 ' + escapeHtml(f.Telephone || 'N/A') + '</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Email pro</span><span class="detail-value"><a href="mailto:' + escapeHtml(f.Email) + '">✉️ ' + escapeHtml(f.Email || 'N/A') + '</a></span></div>' +
+                            (f.Adresse ? '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Secteur / Ville</span><span class="detail-value">📍 ' + escapeHtml(f.Adresse) + '</span></div>' : '') +
+                        '</div>' +
+                        (f.Message ? '<div class="order-message-box"><strong>Besoins exprimés :</strong> ' + escapeHtml(f.Message) + '</div>' : '') +
+                        '<div class="order-actions">' +
+                            '<div class="status-updater">' +
+                                '<span>Changer le statut :</span>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;" onclick="updateStatus(\'' + TABLE_DEVIS + '\', \'' + d.id + '\', \'En cours\')">En cours</button>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;" onclick="updateStatus(\'' + TABLE_DEVIS + '\', \'' + d.id + '\', \'Devis envoyé\')">Devis envoyé</button>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;background:#153821;border-color:#22c55e;color:#4ade80;" onclick="updateStatus(\'' + TABLE_DEVIS + '\', \'' + d.id + '\', \'Validé\')">✓ Validé</button>' +
+                            '</div>' +
+                            '<div style="font-size:.72rem;color:var(--text-muted);">Réf: ' + d.id + '</div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+        }
+
+        function manualRefresh() {
+            fetchAllData();
+        }
+
+        function startPolling() {
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(fetchAllData, POLL_INTERVAL);
+        }
+
+        verifyAndLoad();
+    </script>
+</body>
+</html>
