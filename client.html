@@ -322,7 +322,7 @@
     </div>
 
     <script>
-        var API_ENDPOINT = '/.netlify/functions/api';
+        var API_ENDPOINT = window.location.hostname.includes('netlify') ? '/.netlify/functions/api' : '/api';
         var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
 
         var CURRENT_ORDER = null;
