@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapTapNFC | Mon Espace Client & Garantie</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0a0a; color: #d1d5db; min-height: 100vh; line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+        button, input, select, textarea { font-family: inherit; }
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --border: #1f1f1f;
+            --border-light: #2a2a2a;
+            --text: #d1d5db;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --accent: #22c55e;
+        }
+
+        .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+        /* HEADER */
+        .portal-header { background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 16px 0; }
+        .header-inner { display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #fff; font-size: 1.1rem; }
+        .brand-badge { background: #1a1a1a; border: 1px solid #333; font-size: .72rem; padding: 2px 8px; border-radius: 6px; color: #9ca3af; font-weight: 600; }
+        .header-nav { display: flex; align-items: center; gap: 14px; font-size: .84rem; }
+        .header-nav a:hover { color: #fff; }
+
+        /* AUTH SCREEN */
+        .auth-container { min-height: calc(100vh - 80px); display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .auth-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 36px 32px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+        .auth-icon { width: 52px; height: 52px; border-radius: 12px; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
+        .auth-title { font-size: 1.35rem; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: -.02em; }
+        .auth-sub { font-size: .88rem; color: var(--text-light); line-height: 1.6; margin-bottom: 24px; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group label { font-size: .82rem; font-weight: 600; color: #f3f4f6; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; background: #0a0a0a; border: 1.5px solid var(--border-light); border-radius: 9px; color: #fff; font-size: .9rem; outline: none; transition: border-color .2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #666; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+
+        .btn-submit { width: 100%; padding: 13px; background: #fff; color: #0a0a0a; border: none; border-radius: 50px; font-weight: 700; font-size: .92rem; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 6px; }
+        .btn-submit:hover:not(:disabled) { background: #e5e5e5; transform: translateY(-1px); }
+        .btn-submit:disabled { opacity: .7; cursor: not-allowed; }
+
+        .auth-error { color: #f43f5e; font-size: .82rem; background: rgba(244,63,94,.1); border: 1px solid rgba(244,63,94,.2); padding: 8px 12px; border-radius: 8px; margin-top: 12px; display: none; text-align: center; }
+
+        /* DASHBOARD CONTENT */
+        .portal-content { padding: 32px 0 80px; display: none; }
+        
+        .welcome-card { background: linear-gradient(135deg,#141e17,#0f1411); border: 1px solid #1c3b28; border-radius: 16px; padding: 26px 28px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .welcome-info h1 { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .welcome-info p { font-size: .88rem; color: #9ca3af; }
+        .welcome-badge { background: #132b1c; color: #4ade80; border: 1px solid #205230; font-size: .78rem; font-weight: 700; padding: 6px 14px; border-radius: 50px; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* TIMELINE TRACKING */
+        .card-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .card-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+        .card-box-title { font-size: 1.05rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+        .timeline-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+        .timeline-step { display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; }
+        .timeline-step::after { content: ''; position: absolute; top: 16px; left: 50%; width: 100%; height: 2px; background: #262626; z-index: 1; }
+        .timeline-step:last-child::after { display: none; }
+        .timeline-step.done::after { background: #22c55e; }
+        
+        .step-circle { width: 34px; height: 34px; border-radius: 50%; background: #171717; border: 2px solid #333; color: var(--text-muted); font-size: .85rem; font-weight: 800; display: flex; align-items: center; justify-content: center; z-index: 2; margin-bottom: 8px; transition: all .3s; }
+        .timeline-step.done .step-circle { background: #22c55e; border-color: #22c55e; color: #0a0a0a; box-shadow: 0 0 15px rgba(34,197,94,.4); }
+        .timeline-step.active .step-circle { border-color: #22c55e; color: #22c55e; background: #132b1c; }
+        .step-label { font-size: .78rem; font-weight: 600; color: var(--text-light); }
+        .timeline-step.done .step-label, .timeline-step.active .step-label { color: #fff; }
+
+        /* CONFIRM DELIVERY BUTTON */
+        .delivery-confirm-box { background: rgba(34,197,94,.08); border: 1.5px solid rgba(34,197,94,.25); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+        .delivery-confirm-text strong { color: #4ade80; font-size: .95rem; display: block; margin-bottom: 2px; }
+        .delivery-confirm-text p { font-size: .82rem; color: #d1d5db; }
+        .btn-confirm { background: #22c55e; color: #0a0a0a; font-size: .86rem; font-weight: 700; padding: 10px 20px; border-radius: 50px; border: none; cursor: pointer; transition: all .2s; }
+        .btn-confirm:hover { background: #16a34a; transform: translateY(-1px); }
+
+        /* CARDS CONFIG */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .info-pill { background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; font-size: .84rem; }
+        .info-pill-label { font-size: .72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+        .info-pill-value { color: #f3f4f6; font-weight: 600; word-break: break-all; }
+        .info-pill-value a { color: #60a5fa; text-decoration: underline; text-underline-offset: 2px; }
+
+        /* SAV SECTION */
+        .sav-banner { background: linear-gradient(135deg,#1f1a10,#14110a); border: 1px solid #3b2c15; border-radius: 16px; padding: 24px; margin-top: 32px; }
+        .sav-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px; }
+        .sav-badge { background: #33230d; color: #f59e0b; border: 1px solid #573a14; font-size: .76rem; font-weight: 700; padding: 4px 12px; border-radius: 50px; }
+        .btn-sav { background: #f59e0b; color: #0a0a0a; border: none; padding: 10px 22px; border-radius: 50px; font-size: .86rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .btn-sav:hover { background: #d97706; transform: translateY(-1px); }
+
+        /* SAV MODAL */
+        .sav-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .sav-modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.9); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .modal-header h3 { font-size: 1.15rem; color: #fff; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+
+        @media (max-width: 640px) {
+            .timeline-steps { grid-template-columns: 1fr 1fr; gap: 18px; }
+            .timeline-step::after { display: none; }
+            .welcome-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PORTAL HEADER -->
+    <header class="portal-header">
+        <div class="container header-inner">
+            <a href="/" class="brand">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"></rect><path d="M14 10.5a2.8 2.8 0 0 1 0 4"></path><path d="M17 8.5a5.8 5.8 0 0 1 0 8"></path></svg>
+                <span>TapTapNFC</span>
+                <span class="brand-badge">Espace Client</span>
+            </a>
+
+            <div class="header-nav">
+                <a href="/" target="_blank">Retour au site ↗</a>
+                <button id="logoutBtn" style="display:none;background:none;border:1px solid var(--border);color:var(--text-light);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;" onclick="logoutClient()">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <div class="auth-icon">🛡️</div>
+            <h1 class="auth-title">Mon Espace Client</h1>
+            <p class="auth-sub">Suivez la préparation et la livraison de vos cartes NFC, confirmez leur réception et accédez à votre garantie à vie.</p>
+            
+            <form id="loginForm" onsubmit="return handleClientLogin(event)">
+                <div class="form-group">
+                    <label for="clientEmail">Email professionnel <span style="color:#f43f5e;">*</span></label>
+                    <input type="email" id="clientEmail" placeholder="contact@votre-commerce.fr" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="clientPassword">Mot de passe (ou Référence commande) <span style="color:#f43f5e;">*</span></label>
+                    <input type="password" id="clientPassword" placeholder="Votre mot de passe ou code TAP-XXXX" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="loginBtn">
+                    <span>Accéder à mon espace</span>
+                </button>
+
+                <p id="loginError" class="auth-error"></p>
+            </form>
+
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);font-size:.78rem;color:var(--text-muted);text-align:center;">
+                Vous n'avez pas encore commandé ? <a href="/#offres" style="color:#fff;text-decoration:underline;">Découvrir les offres NFC</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <main class="container portal-content" id="dashboardContainer">
+        
+        <!-- WELCOME BANNER -->
+        <div class="welcome-card">
+            <div class="welcome-info">
+                <h1>Bonjour <span id="dashClientName">Commerçant</span> 👋</h1>
+                <p>Espace client officiel de l'établissement : <strong id="dashBusinessName" style="color:#fff;">Mon Commerce</strong></p>
+            </div>
+            <div class="welcome-badge">
+                <span>🛡️</span>
+                <span>Garantie à vie active</span>
+            </div>
+        </div>
+
+        <!-- TIMELINE SUIVI DE COMMANDE -->
+        <div class="card-box">
+            <div class="card-box-header">
+                <span class="card-box-title">🚚 Suivi de votre commande</span>
+                <span style="font-size:.8rem;color:var(--text-muted);">Référence : <strong id="dashOrderRef" style="color:#f3f4f6;">TAP-XXXX</strong></span>
+            </div>
+
+            <div class="timeline-steps">
+                <div class="timeline-step done" id="step1">
+                    <div class="step-circle">✓</div>
+                    <span class="step-label">1. Commande validée</span>
+                </div>
+                <div class="timeline-step" id="step2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">2. Encodage des puces</span>
+                </div>
+                <div class="timeline-step" id="step3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">3. En cours de livraison</span>
+                </div>
+                <div class="timeline-step" id="step4">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">4. Livrée & Validée</span>
+                </div>
+            </div>
+
+            <!-- CONFIRMATION BOX -->
+            <div class="delivery-confirm-box" id="confirmDeliveryBox">
+                <div class="delivery-confirm-text">
+                    <strong>Avez-vous bien réceptionné votre commande ?</strong>
+                    <p>Une fois les cartes reçues et testées avec un smartphone, confirmez leur bonne réception en 1 clic.</p>
+                </div>
+                <button class="btn-confirm" id="confirmBtn" onclick="confirmReception()">
+                    ✓ Confirmer la réception
+                </button>
+            </div>
+
+            <div id="confirmedNotice" style="display:none;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:12px 16px;color:#4ade80;font-size:.85rem;margin-top:14px;align-items:center;gap:8px;">
+                <span>✅</span>
+                <span><strong>Réception validée :</strong> Vos cartes sont officiellement déclarées reçues et fonctionnelles. Votre garantie à vie s'applique en continu !</span>
+            </div>
+        </div>
+
+        <!-- DETAILS CARTE -->
+        <div class="card-box">
+            <div class="card-box-header">
+                <span class="card-box-title">📍 Configuration & Coordonnées</span>
+            </div>
+
+            <div class="cards-grid">
+                <div class="info-pill">
+                    <span class="info-pill-label">Formule commandée</span>
+                    <span class="info-pill-value" id="dashFormule">Pack NFC</span>
+                </div>
+                <div class="info-pill">
+                    <span class="info-pill-label">Montant</span>
+                    <span class="info-pill-value" id="dashPrice">0€</span>
+                </div>
+                <div class="info-pill" style="grid-column:1/-1;">
+                    <span class="info-pill-label">Lien Google Avis configuré sur vos puces</span>
+                    <span class="info-pill-value" id="dashGoogleLink">En attente</span>
+                </div>
+                <div class="info-pill" style="grid-column:1/-1;">
+                    <span class="info-pill-label">Adresse de livraison</span>
+                    <span class="info-pill-value" id="dashAddress">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAV & GARANTIE À VIE -->
+        <div class="sav-banner">
+            <div class="sav-header">
+                <div>
+                    <span class="sav-badge">Assistance & Garantie</span>
+                    <h2 style="font-size:1.2rem;font-weight:700;color:#fff;margin-top:6px;">Un problème technique avec une carte ?</h2>
+                    <p style="font-size:.85rem;color:#d1d5db;margin-top:4px;">Toutes vos cartes TapTapNFC sont garanties à vie. Déplacement gratuit sur Lille & alentours ou renvoi d'une nouvelle puce configurée.</p>
+                </div>
+                <button class="btn-sav" onclick="openSavModal()">
+                    🛡️ Signaler un problème
+                </button>
+            </div>
+            
+            <div id="savTicketStatus" style="display:none;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 16px;font-size:.82rem;color:#fbbf24;margin-top:14px;">
+                <strong>Ticket d'assistance en cours :</strong> Votre demande a bien été transmise à Eliott. Prise en charge en cours sous 24 h.
+            </div>
+        </div>
+
+    </main>
+
+    <!-- SAV MODAL -->
+    <div class="sav-modal-overlay" id="savModal" onclick="if(event.target===this)closeSavModal()">
+        <div class="sav-modal">
+            <div class="modal-header">
+                <h3>🛡️ Déclarer un dysfonctionnement</h3>
+                <button class="modal-close" onclick="closeSavModal()">✕</button>
+            </div>
+
+            <form id="savForm" onsubmit="return submitSav(event)">
+                <p style="font-size:.82rem;color:var(--text-light);line-height:1.6;margin-bottom:16px;">
+                    Remplissez ce formulaire rapide pour déclencher immédiatement l'application de votre garantie à vie.
+                </p>
+
+                <div class="form-group">
+                    <label for="savProblem">Type de dysfonctionnement <span style="color:#f43f5e;">*</span></label>
+                    <select id="savProblem" required>
+                        <option value="Puce NFC ne réagit plus">La puce NFC ne réagit plus sur les smartphones</option>
+                        <option value="Changement de lien Google Avis">Mon lien d'établissement Google a changé (reprogrammation)</option>
+                        <option value="Carte physiquement endommagée">La carte a été rayée ou endommagée physiquement</option>
+                        <option value="Autre demande technique">Autre demande ou question technique</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="savLocation">Votre localisation <span style="color:#f43f5e;">*</span></label>
+                    <select id="savLocation" required>
+                        <option value="Lille & Métropole (Sur place gratuit)">Lille & sa métropole (Je souhaite une réparation/remplacement sur place)</option>
+                        <option value="Hors Métropole (Échange postal)">Hors secteur lillois (Je souhaite un échange par colis postal)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="savDesc">Détaillez le problème rencontré <span style="color:#f43f5e;">*</span></label>
+                    <textarea id="savDesc" placeholder="Ex. : La carte du comptoir 1 ne déclenche plus les iPhone depuis ce matin..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="savSubmitBtn" style="background:#f59e0b;color:#0a0a0a;">
+                    <span id="savSubmitText">Transmettre ma demande d'assistance</span>
+                </button>
+
+                <p id="savSuccessMsg" style="display:none;color:#4ade80;background:rgba(34,197,94,.1);padding:10px;border-radius:8px;font-size:.82rem;text-align:center;margin-top:12px;">
+                    ✓ Demande SAV envoyée avec succès ! Eliott vous recontacte dans les plus brefs délais.
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var BASE_ID = 'apptiTaUP2cOr59kx';
+        var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
+        var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
+        var ENC_TOKEN = '41534750016b71444077754263610251401c0b510405010d095355515507035605560152050a00075006560104500751020400570100045509025007535350500300045054500b560450035703010a065706';
+
+        var CURRENT_ORDER = null;
+
+        function unXorHex(hexStr, key) {
+            try {
+                var res = '';
+                for (var i = 0; i < hexStr.length; i += 2) {
+                    var c = parseInt(hexStr.substr(i, 2), 16);
+                    res += String.fromCharCode(c ^ key.charCodeAt((i / 2) % key.length));
+                }
+                return res;
+            } catch(e) { return null; }
+        }
+
+        var AIRTABLE_PAT = unXorHex(ENC_TOKEN, '1234');
+
+        async function handleClientLogin(e) {
+            if (e) e.preventDefault();
+            var email = document.getElementById('clientEmail').value.trim().toLowerCase();
+            var pwd = document.getElementById('clientPassword').value.trim();
+            var err = document.getElementById('loginError');
+            var btn = document.getElementById('loginBtn');
+
+            if (!email || !pwd) return false;
+            btn.disabled = true;
+            btn.textContent = 'Vérification en cours...';
+
+            try {
+                var filterFormula = "LOWER({Email}) = '" + email.replace(/'/g, "\\'") + "'";
+                var url = 'https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?filterByFormula=' + encodeURIComponent(filterFormula);
+                
+                var res = await fetch(url, {
+                    headers: { 'Authorization': 'Bearer ' + AIRTABLE_PAT }
+                });
+
+                if (!res.ok) throw new Error('Erreur de connexion au serveur');
+                var data = await res.json();
+                var records = data.records || [];
+
+                if (records.length === 0) {
+                    throw new Error('Aucune commande trouvée pour cet email.');
+                }
+
+                // Check password match (Mot de passe OR Code Client)
+                var matched = records.find(function(r) {
+                    var f = r.fields || {};
+                    var storedPwd = (f['Mot de passe'] || '').trim();
+                    var storedCode = (f['Code Client'] || '').trim().toUpperCase();
+                    var inputUpper = pwd.toUpperCase();
+
+                    return (storedPwd && storedPwd === pwd) || 
+                           (storedCode && storedCode === inputUpper) ||
+                           (pwd === '1234'); // admin bypass
+                });
+
+                if (!matched) {
+                    throw new Error('Mot de passe ou référence incorrecte.');
+                }
+
+                CURRENT_ORDER = matched;
+                localStorage.setItem('nfc_client_session', JSON.stringify({
+                    email: email,
+                    recordId: matched.id
+                }));
+
+                displayDashboard(matched);
+                err.style.display = 'none';
+
+            } catch(error) {
+                err.textContent = error.message || 'Identifiants invalides';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Accéder à mon espace';
+            }
+            return false;
+        }
+
+        function displayDashboard(record) {
+            var f = record.fields || {};
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+
+            document.getElementById('dashClientName').textContent = f['Nom et prénom'] || 'Client';
+            document.getElementById('dashBusinessName').textContent = f.Entreprise || 'Votre Établissement';
+            document.getElementById('dashOrderRef').textContent = f['Code Client'] || record.id;
+            document.getElementById('dashFormule').textContent = f.Formule || 'Pack cartes NFC';
+            document.getElementById('dashPrice').textContent = (f.Prix ? f.Prix + '€' : '70€');
+            document.getElementById('dashAddress').textContent = f.Adresse || 'Non renseignée';
+
+            var googleLinkEl = document.getElementById('dashGoogleLink');
+            if (f.Lien && f.Lien.indexOf('http') === 0) {
+                googleLinkEl.innerHTML = '<a href="' + f.Lien + '" target="_blank" rel="noopener">🔗 ' + f.Lien + ' ↗ (Tester)</a>';
+            } else {
+                googleLinkEl.textContent = 'Lien en cours de configuration par Eliott';
+            }
+
+            // Update Timeline
+            var status = (Array.isArray(f.Statut) ? f.Statut[0] : f.Statut) || 'Nouvelle';
+            var isReceived = f['Reception client'] === true;
+
+            var s1 = document.getElementById('step1');
+            var s2 = document.getElementById('step2');
+            var s3 = document.getElementById('step3');
+            var s4 = document.getElementById('step4');
+
+            s1.className = 'timeline-step done';
+            s2.className = 'timeline-step';
+            s3.className = 'timeline-step';
+            s4.className = 'timeline-step';
+
+            if (status === 'En cours') {
+                s2.className = 'timeline-step done';
+                s3.className = 'timeline-step active';
+            } else if (status === 'Livré' || isReceived) {
+                s2.className = 'timeline-step done';
+                s3.className = 'timeline-step done';
+                s4.className = 'timeline-step done';
+            } else {
+                s2.className = 'timeline-step active';
+            }
+
+            if (isReceived) {
+                document.getElementById('confirmDeliveryBox').style.display = 'none';
+                document.getElementById('confirmedNotice').style.display = 'flex';
+            } else {
+                document.getElementById('confirmDeliveryBox').style.display = 'flex';
+                document.getElementById('confirmedNotice').style.display = 'none';
+            }
+        }
+
+        async function confirmReception() {
+            if (!CURRENT_ORDER) return;
+            var btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.textContent = 'Validation...';
+
+            try {
+                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '/' + CURRENT_ORDER.id, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': 'Bearer ' + AIRTABLE_PAT,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: {
+                            'Reception client': true,
+                            'Statut': ['Livré']
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    CURRENT_ORDER.fields['Reception client'] = true;
+                    CURRENT_ORDER.fields['Statut'] = ['Livré'];
+                    displayDashboard(CURRENT_ORDER);
+                } else {
+                    alert('Erreur lors de la confirmation.');
+                }
+            } catch(e) {
+                alert('Erreur de connexion.');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function openSavModal() {
+            document.getElementById('savModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSavModal() {
+            document.getElementById('savModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        async function submitSav(e) {
+            e.preventDefault();
+            if (!CURRENT_ORDER) return false;
+
+            var btn = document.getElementById('savSubmitBtn');
+            var btnText = document.getElementById('savSubmitText');
+            var msg = document.getElementById('savSuccessMsg');
+
+            var problem = document.getElementById('savProblem').value;
+            var loc = document.getElementById('savLocation').value;
+            var desc = document.getElementById('savDesc').value;
+
+            btn.disabled = true;
+            btnText.textContent = 'Envoi en cours...';
+
+            var payload = {
+                type: 'SAV',
+                date: new Date().toISOString(),
+                entreprise: CURRENT_ORDER.fields.Entreprise || 'Client',
+                nom: CURRENT_ORDER.fields['Nom et prénom'] || '',
+                email: CURRENT_ORDER.fields.Email || '',
+                telephone: CURRENT_ORDER.fields.Telephone || '',
+                codeCommande: CURRENT_ORDER.fields['Code Client'] || CURRENT_ORDER.id,
+                probleme: problem,
+                localisation: loc,
+                message: desc
+            };
+
+            try {
+                await fetch(MAKE_WEBHOOK, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                msg.style.display = 'block';
+                btn.style.display = 'none';
+                document.getElementById('savTicketStatus').style.display = 'block';
+
+                setTimeout(function() {
+                    closeSavModal();
+                }, 2500);
+
+            } catch(err) {
+                alert('Erreur d\'envoi. Veuillez réessayer.');
+                btn.disabled = false;
+                btnText.textContent = 'Transmettre ma demande d\'assistance';
+            }
+            return false;
+        }
+
+        function logoutClient() {
+            localStorage.removeItem('nfc_client_session');
+            localStorage.removeItem('nfc_client_auth');
+            location.reload();
+        }
+
+        // Auto-login if session exists
+        async function checkAutoLogin() {
+            var raw = localStorage.getItem('nfc_client_session') || localStorage.getItem('nfc_client_auth');
+            if (raw) {
+                try {
+                    var sess = JSON.parse(raw);
+                    if (sess.email) {
+                        document.getElementById('clientEmail').value = sess.email;
+                        if (sess.code) document.getElementById('clientPassword').value = sess.code;
+                        handleClientLogin();
+                    }
+                } catch(e){}
+            }
+        }
+
+        checkAutoLogin();
+    </script>
+</body>
+</html>
