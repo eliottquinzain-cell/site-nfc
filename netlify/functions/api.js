@@ -26,10 +26,11 @@ const ADMIN_ACCOUNTS = [
         passwordHash: 'afafce854762c9af7ce92461ed50dffc565eb7b6b1f70fd5725163b00893cc4d'
     },
     {
-        username: 'atelier.admin',
-        name: 'Responsable Atelier & Production',
-        role: 'Atelier & Encodage NFC',
-        badge: '⚡ Production',
+        username: 'config.admin',
+        aliases: ['atelier.admin'],
+        name: 'Responsable Technique & Configuration',
+        role: 'Configuration & Programmation NFC',
+        badge: '⚡ Configuration',
         // Hash de : Atel!er#NfcProg$2026*Prod99 + SALT
         passwordHash: 'f8584d4e5142fdf146f2f8066e0ac6b79fbe192603034b0df79221fcc349da3a'
     },
@@ -46,7 +47,10 @@ const ADMIN_ACCOUNTS = [
 function verifyAdminCredentials(usernameOrEmail, password) {
     if (!usernameOrEmail || !password) return null;
     const u = usernameOrEmail.trim().toLowerCase();
-    const account = ADMIN_ACCOUNTS.find(a => a.username.toLowerCase() === u);
+    const account = ADMIN_ACCOUNTS.find(a => 
+        a.username.toLowerCase() === u || 
+        (a.aliases && a.aliases.some(alias => alias.toLowerCase() === u))
+    );
     if (!account) return null;
 
     const hash = crypto.createHash('sha256').update(password.trim() + SALT).digest('hex');
@@ -75,7 +79,10 @@ function verifyAdminSessionToken(tokenStr) {
         const expectedHmac = crypto.createHmac('sha256', SALT).update(`${username}:${timestampStr}`).digest('hex');
         if (hmac !== expectedHmac) return null;
 
-        const account = ADMIN_ACCOUNTS.find(a => a.username === username);
+        const account = ADMIN_ACCOUNTS.find(a => 
+            a.username === username || 
+            (a.aliases && a.aliases.includes(username))
+        );
         return account || null;
     } catch(e) {
         return null;
