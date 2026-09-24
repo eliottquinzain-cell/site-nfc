@@ -226,7 +226,7 @@
         <a href="#" class="logo"><span class="logo-icon"><svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"></rect><path d="M14 10.5a2.8 2.8 0 0 1 0 4"></path><path d="M17 8.5a5.8 5.8 0 0 1 0 8"></path></svg></span> TapTapNFC</a>
         <nav class="nav-links" id="navLinks">
             <a href="#offres">Offres</a>
-            <a href="#devis">Devis</a>
+            <a href="#garantie">Garantie</a>
             <a href="#livraison">Livraison</a>
             <a href="#faq">FAQ</a>
             <a href="#contact" class="btn btn-primary" style="padding:7px 18px;font-size:.8rem;">Contact</a>
@@ -271,6 +271,7 @@
         <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6.5-9 12-9 12s-9-5.5-9-12a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Livraison <span class="num">Lille & métropole</span></span>
         <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>Configuration <span class="num">offerte</span></span>
         <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>Cartes <span class="num">prêtes à l'emploi</span></span>
+        <span class="proof-item"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Garantie <span class="num">à vie</span></span>
     </div>
 </div>
 
@@ -339,6 +340,7 @@
                     <li><span class="check">✓</span> Configuration sur mesure incluse</li>
                     <li><span class="check">✓</span> Prête à l'emploi</li>
                     <li><span class="check">✓</span> Livraison offerte*</li>
+                    <li><span class="check">✓</span> Garantie à vie incluse</li>
                 </ul>
                 <button class="btn btn-outline" onclick="addToCart('1','1 carte',40)">Ajouter au panier</button>
             </div>
@@ -352,6 +354,7 @@
                     <li><span class="check">✓</span> Configuration sur mesure incluse</li>
                     <li><span class="check">✓</span> Prêtes à l'emploi</li>
                     <li><span class="check">✓</span> Livraison offerte*</li>
+                    <li><span class="check">✓</span> Garantie à vie incluse</li>
                 </ul>
                 <button class="btn btn-primary" onclick="addToCart('2','2 cartes',70)">Ajouter au panier</button>
             </div>
@@ -364,6 +367,7 @@
                     <li><span class="check">✓</span> Configuration sur mesure incluse</li>
                     <li><span class="check">✓</span> Prêtes à l'emploi</li>
                     <li><span class="check">✓</span> Livraison offerte*</li>
+                    <li><span class="check">✓</span> Garantie à vie incluse</li>
                     <li><span class="check">✓</span> Support & reprogrammation</li>
                 </ul>
                 <button class="btn btn-outline" onclick="addToCart('3','3 cartes',90)">Ajouter au panier</button>
@@ -414,6 +418,31 @@
     </div>
 </section>
 
+<!-- ===== GARANTIE À VIE ===== -->
+<section class="section" id="garantie" style="padding-top:0;">
+    <div class="container">
+        <div class="devis-card fade-in" style="background:linear-gradient(135deg,#101a14,#0a0f0c);border-color:#1c3b28;">
+            <div class="devis-icon" style="background:#132b1c;border-color:#205230;color:#22c55e;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+            </div>
+            <div class="devis-text">
+                <h3 style="color:#f3f4f6;font-size:1.15rem;margin-bottom:8px;">Garantie à vie & Service de remplacement</h3>
+                <p style="color:var(--text);font-size:.9rem;line-height:1.7;">Toutes vos cartes TapTapNFC sont <strong>garanties à vie</strong> contre tout problème de fonctionnement technique :</p>
+                <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;font-size:.85rem;color:var(--text-light);line-height:1.6;">
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <span style="color:#22c55e;font-size:1.1rem;line-height:1;">📍</span>
+                        <span><strong>Lille et ses alentours :</strong> en cas de dysfonctionnement, je viens directement dans votre établissement pour réparer ou remplacer votre carte sur place, sans aucun frais.</span>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:flex-start;">
+                        <span style="color:#22c55e;font-size:1.1rem;line-height:1;">📦</span>
+                        <span><strong>Plus loin en France :</strong> selon votre préférence, soit je vous renvoie immédiatement une nouvelle carte configurée en remplacement (seuls les frais de livraison restent à votre charge), soit vous me renvoyez votre carte pour que je la répare/reprogramme et vous la renvoie.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ===== FAQ ===== -->
 <section class="section" style="background:#0d0d0d;" id="faq">
     <div class="container text-center">
@@ -438,6 +467,12 @@
             <div class="faq-item">
                 <button class="faq-question">Y a-t-il des frais récurrents ou cachés ?<span class="icon">+</span></button>
                 <div class="faq-answer">Non, aucun. Vous ne réglez qu'une seule fois à l'achat. Il n'y a aucun abonnement, aucune commission par avis et aucun frais caché.</div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Comment fonctionne la garantie à vie en cas de problème ?<span class="icon">+</span></button>
+                <div class="faq-answer">Toutes nos cartes sont garanties à vie. En cas de dysfonctionnement technique :<br><br>
+                • <strong>Lille & alentours :</strong> je me déplace gratuitement dans votre établissement pour réparer ou remplacer votre carte sur place.<br>
+                • <strong>Hors secteur lillois :</strong> je vous réexpédie immédiatement une nouvelle carte configurée (seuls les frais d'envoi restent à votre charge), ou vous me renvoyez votre carte pour une réparation et reprogrammation gratuite.</div>
             </div>
         </div>
     </div>
@@ -466,7 +501,7 @@
             <div class="footer-col">
                 <h4>Navigation</h4>
                 <a href="#offres">Offres</a>
-                <a href="#devis">Devis</a>
+                <a href="#garantie">Garantie</a>
                 <a href="#livraison">Livraison</a>
                 <a href="#faq">FAQ</a>
             </div>
