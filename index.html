@@ -175,68 +175,82 @@
         .footer-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: .8rem; }
 
         /* CART DRAWER & FORMS UPGRADE */
-        .cart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,7,9,.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 2000; display: none; justify-content: flex-end; transition: opacity .3s ease; }
+        /* CART DRAWER & FORMS (Harmonized with site colors) */
+        .cart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 2000; display: none; justify-content: flex-end; transition: opacity .3s ease; }
         .cart-overlay.open { display: flex; }
-        .cart-drawer { background: #0c0e12; width: 100%; max-width: 480px; height: 100%; overflow-y: auto; padding: 28px 24px; border-left: 1px solid #1f2530; display: flex; flex-direction: column; animation: slideIn .3s cubic-bezier(.16,1,.3,1); box-shadow: -15px 0 50px rgba(0,0,0,.7); }
+        .cart-drawer { background: #0a0a0a; width: 100%; max-width: 480px; height: 100%; overflow-y: auto; padding: 28px 24px; border-left: 1px solid var(--border); display: flex; flex-direction: column; animation: slideIn .3s cubic-bezier(.16,1,.3,1); box-shadow: -15px 0 50px rgba(0,0,0,.7); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         
-        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
-        .cart-header h2 { font-size: 1.2rem; font-weight: 700; color: #f8fafc; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
-        .order-close { width: 34px; height: 34px; border: 1px solid #242c38; background: #13171f; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text-light); display: flex; align-items: center; justify-content: center; transition: all .2s; }
-        .order-close:hover { background: #1f2735; color: #fff; border-color: #3b4658; transform: rotate(90deg); }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .cart-header h2 { font-size: 1.2rem; font-weight: 700; color: #f3f4f6; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
+        .order-close { width: 34px; height: 34px; border: 1px solid #333; background: #1a1a1a; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text-light); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+        .order-close:hover { background: #252525; color: #fff; border-color: #555; transform: rotate(90deg); }
         
         .cart-empty { text-align: center; padding: 48px 16px; color: var(--text-light); }
         .cart-items { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
-        .cart-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 16px; background: linear-gradient(135deg, #13171f, #0f1218); border: 1px solid #202733; border-radius: 12px; }
+        .cart-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; }
         .cart-item-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-        .cart-item-info strong { font-size: .95rem; color: #f8fafc; font-weight: 600; }
+        .cart-item-info strong { font-size: .95rem; color: #f3f4f6; font-weight: 600; }
         .cart-item-info span { font-size: .78rem; color: #22c55e; display: inline-flex; align-items: center; gap: 4px; }
-        .cart-item-price { font-size: 1.05rem; font-weight: 700; color: #f8fafc; white-space: nowrap; }
-        .cart-item-remove { width: 28px; height: 28px; background: #1a202c; border: 1px solid #2d3748; border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: .8rem; }
+        .cart-item-price { font-size: 1.05rem; font-weight: 700; color: #f3f4f6; white-space: nowrap; }
+        .cart-item-remove { width: 28px; height: 28px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: .8rem; }
         .cart-item-remove:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,.1); }
         
-        .cart-back { background: none; border: none; color: #94a3b8; font-size: .85rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; margin-bottom: 16px; transition: color .2s; }
+        .cart-back { background: none; border: none; color: var(--text-light); font-size: .85rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; margin-bottom: 16px; transition: color .2s; }
         .cart-back:hover { color: #fff; }
-        .cart-note { font-size: .8rem; color: #94a3b8; line-height: 1.6; margin: 12px 0; padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 8px; border-left: 3px solid #3b82f6; }
-        .cart-note a { color: #60a5fa; text-decoration: underline; font-weight: 500; }
+        .cart-note { font-size: .8rem; color: var(--text-light); line-height: 1.6; margin: 12px 0; padding: 12px 14px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); border-left: 3px solid #fff; }
+        .cart-note a { color: #fff; text-decoration: underline; font-weight: 500; }
 
         /* RECAP CARD */
-        .recap-card { background: linear-gradient(135deg,#131822,#0d1117); border: 1px solid #212836; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .recap-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
         .recap-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .recap-title { font-size: .95rem; font-weight: 700; color: #f8fafc; }
-        .recap-price { font-size: 1.25rem; font-weight: 800; color: #fff; }
+        .recap-title { font-size: .95rem; font-weight: 700; color: #f3f4f6; }
+        .recap-price { font-size: 1.25rem; font-weight: 800; color: #f3f4f6; }
         .recap-badges { display: flex; flex-wrap: wrap; gap: 6px; }
         .recap-badge { font-size: .72rem; padding: 3px 8px; border-radius: 4px; background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.25); font-weight: 500; }
 
         /* FORM BLOCKS */
         .order-form { display: flex; flex-direction: column; gap: 16px; }
-        .form-section { background: #11141b; border: 1px solid #1e2430; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .form-section-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-        .form-section-title span.step-num { width: 18px; height: 18px; border-radius: 50%; background: #fff; color: #000; font-size: .7rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
+        .form-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .form-section-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-light); display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .form-section-title span.step-num { width: 18px; height: 18px; border-radius: 50%; background: #f3f4f6; color: #0a0a0a; font-size: .7rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
         
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: .82rem; font-weight: 600; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+        .form-group label { font-size: .82rem; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
         .form-group label .req { color: #f43f5e; font-weight: 700; }
-        .form-group label .opt { font-size: .72rem; color: #64748b; font-weight: 400; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #232b38; border-radius: 9px; font-size: .9rem; font-family: inherit; background: #080a0d; color: #f1f5f9; transition: all .2s; }
-        .form-group input::placeholder, .form-group textarea::placeholder { color: #475569; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #38bdf8; background: #0b0e14; box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+        .form-group label .opt { font-size: .72rem; color: var(--text-muted); font-weight: 400; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border-light); border-radius: 9px; font-size: .9rem; font-family: inherit; background: #0a0a0a; color: #f3f4f6; transition: all .2s; }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #6b7280; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #555; background: #0e0e0e; box-shadow: 0 0 0 3px rgba(255,255,255,.05); }
         .form-group textarea { min-height: 75px; resize: vertical; }
 
+        /* AUTOCOMPLETE DROPDOWN */
+        .autocomplete-wrapper { position: relative; width: 100%; }
+        .autocomplete-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #141414; border: 1px solid #2a2a2a; border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.85); z-index: 100; max-height: 250px; overflow-y: auto; display: none; }
+        .autocomplete-dropdown.show { display: block; animation: fadeIn .2s ease; }
+        .autocomplete-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #1f1f1f; transition: background .15s; display: flex; flex-direction: column; gap: 3px; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover, .autocomplete-item.active { background: #1f1f1f; }
+        .autocomplete-name { font-size: .88rem; font-weight: 600; color: #f3f4f6; display: flex; align-items: center; gap: 6px; }
+        .autocomplete-sub { font-size: .76rem; color: #9ca3af; display: flex; align-items: center; gap: 4px; padding-left: 20px; }
+        .autocomplete-badge { font-size: .65rem; background: rgba(255,255,255,.08); color: var(--text-light); padding: 1px 6px; border-radius: 4px; margin-left: auto; }
+        .autocomplete-loading { padding: 12px 14px; font-size: .8rem; color: var(--text-muted); text-align: center; }
+
         /* HELPER TOGGLE */
-        .helper-toggle { font-size: .76rem; color: #38bdf8; background: none; border: none; cursor: pointer; text-align: left; padding: 0; margin-top: 2px; display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; text-underline-offset: 2px; }
-        .helper-box { display: none; background: #090c10; border: 1px solid #1f2735; border-radius: 8px; padding: 12px; margin-top: 6px; font-size: .78rem; color: #94a3b8; line-height: 1.6; }
+        .helper-toggle { font-size: .76rem; color: var(--text-light); background: none; border: none; cursor: pointer; text-align: left; padding: 0; margin-top: 2px; display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; text-underline-offset: 2px; }
+        .helper-toggle:hover { color: #fff; }
+        .helper-box { display: none; background: #141414; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 6px; font-size: .78rem; color: var(--text-light); line-height: 1.6; }
         .helper-box.show { display: block; animation: fadeIn .2s ease; }
-        .helper-box strong { color: #f1f5f9; }
+        .helper-box strong { color: #f3f4f6; }
 
         /* TOTAL BAR */
-        .order-total { background: linear-gradient(135deg,#161b24,#0f131a); border: 1px solid #252e3d; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
-        .order-total-label { font-size: .92rem; font-weight: 600; color: #cbd5e1; }
-        .order-total-price { font-size: 1.45rem; font-weight: 800; color: #fff; }
+        .order-total { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .order-total-label { font-size: .92rem; font-weight: 600; color: var(--text); }
+        .order-total-price { font-size: 1.45rem; font-weight: 800; color: #f3f4f6; }
 
         /* SUBMIT BUTTON WITH SPINNER */
         .btn-submit { width: 100%; justify-content: center; padding: 14px; font-size: .95rem; font-weight: 700; border-radius: 50px; background: #fff; color: #0a0a0a; border: none; cursor: pointer; transition: all .25s; display: inline-flex; align-items: center; gap: 10px; }
-        .btn-submit:hover:not(:disabled) { background: #e2e8f0; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,.15); }
+        .btn-submit:hover:not(:disabled) { background: #e5e5e5; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,.1); }
         .btn-submit:disabled { opacity: .7; cursor: not-allowed; }
         .btn-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.25); border-top-color: #000; border-radius: 50%; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -245,15 +259,15 @@
         .order-success { display: none; text-align: center; padding: 24px 8px; animation: fadeIn .3s ease; }
         .order-success.show { display: block; }
         .success-icon-wrap { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: rgba(34,197,94,.12); border: 2px solid rgba(34,197,94,.3); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 30px rgba(34,197,94,.2); }
-        .success-title { font-size: 1.3rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; letter-spacing: -.02em; }
-        .success-subtitle { font-size: .88rem; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
-        .success-card { background: #10141c; border: 1px solid #1e2634; border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 20px; }
-        .success-card h4 { font-size: .8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
-        .success-steps { display: flex; flex-direction: column; gap: 10px; font-size: .82rem; color: #94a3b8; }
+        .success-title { font-size: 1.3rem; font-weight: 800; color: #f3f4f6; margin-bottom: 6px; letter-spacing: -.02em; }
+        .success-subtitle { font-size: .88rem; color: var(--text-light); line-height: 1.6; margin-bottom: 20px; }
+        .success-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 20px; }
+        .success-card h4 { font-size: .8rem; font-weight: 700; color: #f3f4f6; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+        .success-steps { display: flex; flex-direction: column; gap: 10px; font-size: .82rem; color: var(--text-light); }
         .success-steps li { display: flex; align-items: flex-start; gap: 10px; }
-        .success-steps li span.badge-num { width: 20px; height: 20px; border-radius: 50%; background: #1e293b; color: #38bdf8; font-weight: 700; font-size: .72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+        .success-steps li span.badge-num { width: 20px; height: 20px; border-radius: 50%; background: #1a1a1a; border: 1px solid #333; color: #fff; font-weight: 700; font-size: .72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
         
-        .trust-badge-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; font-size: .74rem; color: #64748b; }
+        .trust-badge-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; font-size: .74rem; color: var(--text-muted); }
         .trust-badge-row span { display: inline-flex; align-items: center; gap: 4px; }
 
         /* FADE */
@@ -572,8 +586,8 @@
         <div id="cartView">
             <div id="cartEmpty" class="cart-empty" style="color:var(--text-muted);">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;opacity:.6;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                <p style="font-size:1.05rem;color:#f1f5f9;font-weight:600;margin-bottom:4px;">Votre panier est vide</p>
-                <p style="font-size:.85rem;color:#64748b;">Sélectionnez une formule pour commencer.</p>
+                <p style="font-size:1.05rem;color:#f3f4f6;font-weight:600;margin-bottom:4px;">Votre panier est vide</p>
+                <p style="font-size:.85rem;color:var(--text-muted);">Sélectionnez une formule pour commencer.</p>
                 <button class="btn btn-outline" style="margin-top:20px;" onclick="closeCart()">Découvrir nos offres</button>
             </div>
             
@@ -625,7 +639,14 @@
                 
                 <div class="form-group">
                     <label for="orderBusiness">Nom de votre entreprise ou enseigne <span class="req">*</span></label>
-                    <input type="text" id="orderBusiness" placeholder="Ex. : Café de la Place, Salon Prestige..." required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="orderBusiness" placeholder="Tapez le nom de votre établissement..." required autocomplete="off">
+                        <div id="orderBusinessDropdown" class="autocomplete-dropdown"></div>
+                    </div>
+                    <div id="orderGoogleHint" style="display:none;margin-top:5px;font-size:.76rem;color:#22c55e;">
+                        <span>✓ Établissement vérifié</span> &bull; 
+                        <a id="orderGoogleSearchLink" href="#" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:underline;">Voir la fiche Google ↗</a>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -740,7 +761,7 @@
         </div>
 
         <form id="devisForm" class="order-form" onsubmit="return submitDevis(event)">
-            <p style="font-size:.85rem;color:#94a3b8;line-height:1.6;margin-top:-8px;background:#11141b;border:1px solid #1e2430;padding:12px 14px;border-radius:10px;">
+            <p style="font-size:.85rem;color:var(--text-light);line-height:1.6;margin-top:-8px;background:var(--bg-card);border:1px solid var(--border);padding:12px 14px;border-radius:10px;">
                 Plusieurs boutiques, franchise ou commande de plus de 3 cartes : détaillez vos besoins ci-dessous, je vous réponds par email avec un devis adapté sous 24 h.
             </p>
 
@@ -749,7 +770,14 @@
                 
                 <div class="form-group">
                     <label for="devisBusiness">Nom de votre entreprise ou enseigne <span class="req">*</span></label>
-                    <input type="text" id="devisBusiness" placeholder="Ex. : Groupe Hôtelier, Réseau de restaurants..." required>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="devisBusiness" placeholder="Tapez le nom de votre enseigne, hôtel, groupe..." required autocomplete="off">
+                        <div id="devisBusinessDropdown" class="autocomplete-dropdown"></div>
+                    </div>
+                    <div id="devisGoogleHint" style="display:none;margin-top:5px;font-size:.76rem;color:#22c55e;">
+                        <span>✓ Établissement vérifié</span> &bull; 
+                        <a id="devisGoogleSearchLink" href="#" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:underline;">Voir la fiche Google ↗</a>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -816,6 +844,185 @@
 <script>
 var CONTACT_EMAIL = 'equinzain@gmail.com';
 var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
+
+/* ===== AUTOCOMPLETE DES ÉTABLISSEMENTS & RECHERCHE GOOGLE ===== */
+function initBusinessAutocomplete(config) {
+    var input = document.getElementById(config.inputId);
+    var dropdown = document.getElementById(config.dropdownId);
+    var addressInput = config.addressInputId ? document.getElementById(config.addressInputId) : null;
+    var hint = config.hintId ? document.getElementById(config.hintId) : null;
+    var googleLink = config.googleLinkId ? document.getElementById(config.googleLinkId) : null;
+    if (!input || !dropdown) return;
+
+    var debounceTimer = null;
+    var activeIdx = -1;
+    var currentItems = [];
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function cleanCompanyName(r, match) {
+        if (match && match.nom_commercial) return match.nom_commercial;
+        if (match && match.liste_enseignes && match.liste_enseignes[0]) return match.liste_enseignes[0];
+        if (r.nom_commercial) return r.nom_commercial;
+        if (r.nom_raison_sociale) return r.nom_raison_sociale;
+        var name = r.nom_complet || '';
+        var parenIdx = name.indexOf(' (');
+        if (parenIdx > 0 && name.endsWith(')')) {
+            var base = name.substring(0, parenIdx);
+            var inParen = name.substring(parenIdx + 2, name.length - 1);
+            if (base.toUpperCase() === inParen.toUpperCase()) return base;
+        }
+        return name;
+    }
+
+    function hideDropdown() {
+        dropdown.classList.remove('show');
+        dropdown.innerHTML = '';
+        currentItems = [];
+        activeIdx = -1;
+    }
+
+    function selectItem(item) {
+        input.value = item.name;
+        if (addressInput && item.address) {
+            addressInput.value = item.address;
+        }
+        if (hint && googleLink) {
+            var searchQ = encodeURIComponent(item.name + ' ' + (item.city || ''));
+            googleLink.href = 'https://www.google.com/maps/search/' + searchQ;
+            hint.style.display = 'block';
+        }
+        hideDropdown();
+    }
+
+    function updateActive() {
+        var domItems = dropdown.querySelectorAll('.autocomplete-item');
+        domItems.forEach(function(el, idx) {
+            if (idx === activeIdx) {
+                el.classList.add('active');
+                el.scrollIntoView({ block: 'nearest' });
+            } else {
+                el.classList.remove('active');
+            }
+        });
+    }
+
+    input.addEventListener('input', function() {
+        var query = input.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            hideDropdown();
+            if (hint) hint.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = '<div class="autocomplete-loading">Recherche des établissements...</div>';
+        dropdown.classList.add('show');
+
+        debounceTimer = setTimeout(async function() {
+            try {
+                var url = 'https://recherche-entreprises.api.gouv.fr/search?q=' + encodeURIComponent(query) + '&per_page=6';
+                var res = await fetch(url);
+                if (!res.ok) throw new Error('API non disponible');
+                var data = await res.json();
+                var results = data.results || [];
+
+                if (results.length === 0) {
+                    dropdown.innerHTML = '<div class="autocomplete-loading" style="color:var(--text-muted);">Aucun établissement trouvé (continuez la saisie manuelle)</div>';
+                    return;
+                }
+
+                currentItems = results.map(function(r) {
+                    var s = r.siege || {};
+                    var match = (r.matching_etablissements && r.matching_etablissements[0]) || s;
+                    var name = cleanCompanyName(r, match);
+                    var addr = match.adresse || s.adresse || '';
+                    var city = match.libelle_commune || s.libelle_commune || '';
+                    var cp = match.code_postal || s.code_postal || '';
+                    return {
+                        name: name,
+                        address: addr,
+                        city: city,
+                        cp: cp
+                    };
+                });
+
+                dropdown.innerHTML = currentItems.map(function(item, idx) {
+                    return '<div class="autocomplete-item" data-index="' + idx + '">' +
+                        '<div class="autocomplete-name">' +
+                            '<span>🏪</span>' +
+                            '<span>' + escapeHtml(item.name) + '</span>' +
+                            (item.city ? '<span class="autocomplete-badge">' + escapeHtml(item.city) + '</span>' : '') +
+                        '</div>' +
+                        (item.address ? '<div class="autocomplete-sub">📍 ' + escapeHtml(item.address) + '</div>' : '') +
+                    '</div>';
+                }).join('');
+
+                var domItems = dropdown.querySelectorAll('.autocomplete-item');
+                domItems.forEach(function(el) {
+                    el.addEventListener('click', function(ev) {
+                        ev.stopPropagation();
+                        var idx = parseInt(el.getAttribute('data-index'), 10);
+                        if (currentItems[idx]) selectItem(currentItems[idx]);
+                    });
+                });
+            } catch (err) {
+                dropdown.innerHTML = '<div class="autocomplete-loading" style="color:var(--text-muted);">Saisie libre possible</div>';
+            }
+        }, 220);
+    });
+
+    input.addEventListener('keydown', function(e) {
+        if (!dropdown.classList.contains('show') || currentItems.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = (activeIdx + 1) % currentItems.length;
+            updateActive();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = (activeIdx - 1 + currentItems.length) % currentItems.length;
+            updateActive();
+        } else if (e.key === 'Enter') {
+            if (activeIdx >= 0 && currentItems[activeIdx]) {
+                e.preventDefault();
+                selectItem(currentItems[activeIdx]);
+            }
+        } else if (e.key === 'Escape') {
+            hideDropdown();
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            hideDropdown();
+        }
+    });
+}
+
+initBusinessAutocomplete({
+    inputId: 'orderBusiness',
+    dropdownId: 'orderBusinessDropdown',
+    addressInputId: 'orderAddress',
+    hintId: 'orderGoogleHint',
+    googleLinkId: 'orderGoogleSearchLink'
+});
+
+initBusinessAutocomplete({
+    inputId: 'devisBusiness',
+    dropdownId: 'devisBusinessDropdown',
+    addressInputId: 'devisAddress',
+    hintId: 'devisGoogleHint',
+    googleLinkId: 'devisGoogleSearchLink'
+});
 
 function toggleGoogleHelper(){
     var el = document.getElementById('googleHelperBox');
