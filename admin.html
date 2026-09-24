@@ -189,6 +189,11 @@
                 <div class="metric-value" id="kpiDevis">0</div>
                 <div class="metric-sub" id="kpiNewDevis">0 en attente</div>
             </div>
+            <div class="metric-card" id="cardSavMetric">
+                <span class="metric-title">Incidents SAV & Garantie</span>
+                <div class="metric-value" id="kpiSav">0</div>
+                <div class="metric-sub" id="kpiNewSav">0 en attente</div>
+            </div>
         </section>
 
         <!-- TABS -->
@@ -201,6 +206,10 @@
                 <button class="tab-btn" id="tabDevis" onclick="switchTab('devis')">
                     <span>📋 Demandes de devis</span>
                     <span class="tab-count" id="countDevis">0</span>
+                </button>
+                <button class="tab-btn" id="tabSav" onclick="switchTab('sav')">
+                    <span>🛡️ SAV & Garantie</span>
+                    <span class="tab-count" id="countSav" style="background:#f59e0b;color:#0a0a0a;">0</span>
                 </button>
             </div>
 
@@ -222,6 +231,7 @@
 
         <div id="ordersContainer" class="cards-list" style="display:none;"></div>
         <div id="devisContainer" class="cards-list" style="display:none;"></div>
+        <div id="savContainer" class="cards-list" style="display:none;"></div>
 
         <div id="emptyContainer" class="empty-state" style="display:none;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
@@ -235,11 +245,13 @@
         var BASE_ID = 'apptiTaUP2cOr59kx';
         var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
         var TABLE_DEVIS = 'tbl8jxUNNwo4oA2eq';
+        var TABLE_SAV = 'tblpSHnWapHObQOOU';
         var ENC_TOKEN = '41534750016b71444077754263610251401c0b510405010d095355515507035605560152050a00075006560104500751020400570100045509025007535350500300045054500b560450035703010a065706';
 
         var CURRENT_TAB = 'orders';
         var ORDERS = [];
         var DEVIS = [];
+        var SAV_TICKETS = [];
         var POLL_INTERVAL = 15000;
         var pollTimer = null;
 
@@ -342,11 +354,14 @@
             if (refreshBtn) refreshBtn.classList.add('spinning');
 
             try {
-                var [resCmd, resDev] = await Promise.all([
+                var [resCmd, resDev, resSav] = await Promise.all([
                     fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
                         headers: { 'Authorization': 'Bearer ' + token }
                     }),
                     fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_DEVIS + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    }),
+                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_SAV + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
                         headers: { 'Authorization': 'Bearer ' + token }
                     })
                 ]);
@@ -358,6 +373,10 @@
                 if (resDev.ok) {
                     var dataDev = await resDev.json();
                     DEVIS = (dataDev.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                }
+                if (resSav && resSav.ok) {
+                    var dataSav = await resSav.json();
+                    SAV_TICKETS = (dataSav.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
                 }
 
                 updateKPIs();
@@ -396,27 +415,39 @@
                 return !s || s === 'Nouvelle';
             }).length;
 
+            var newSav = SAV_TICKETS.filter(function(s){
+                var st = s.fields.Statut;
+                var str = Array.isArray(st) ? st[0] : st;
+                return !str || str === 'Nouveau ticket' || str === 'Pris en charge';
+            }).length;
+
             document.getElementById('kpiRevenue').textContent = revenue + '€';
             document.getElementById('kpiOrders').textContent = ORDERS.length;
             document.getElementById('kpiNewOrders').textContent = newOrders + ' nouvelle(s)';
             document.getElementById('kpiCards').textContent = totalCards;
             document.getElementById('kpiDevis').textContent = DEVIS.length;
             document.getElementById('kpiNewDevis').textContent = newDevis + ' en attente';
+            document.getElementById('kpiSav').textContent = SAV_TICKETS.length;
+            document.getElementById('kpiNewSav').textContent = newSav + ' en attente';
 
             document.getElementById('countOrders').textContent = ORDERS.length;
             document.getElementById('countDevis').textContent = DEVIS.length;
+            document.getElementById('countSav').textContent = SAV_TICKETS.length;
         }
 
         function switchTab(tab) {
             CURRENT_TAB = tab;
             document.getElementById('tabOrders').classList.toggle('active', tab === 'orders');
             document.getElementById('tabDevis').classList.toggle('active', tab === 'devis');
+            document.getElementById('tabSav').classList.toggle('active', tab === 'sav');
             
             var sel = document.getElementById('statusFilter');
             if (tab === 'orders') {
                 sel.innerHTML = '<option value="ALL">Tous les statuts</option><option value="Nouvelle">Nouvelles</option><option value="En cours">En cours</option><option value="Livré">Livrées</option>';
-            } else {
+            } else if (tab === 'devis') {
                 sel.innerHTML = '<option value="ALL">Tous les statuts</option><option value="Nouvelle">Nouvelles</option><option value="En cours">En cours</option><option value="Devis envoyé">Devis envoyé</option><option value="Validé">Validé</option>';
+            } else {
+                sel.innerHTML = '<option value="ALL">Tous les statuts</option><option value="Nouveau ticket">Nouveaux tickets</option><option value="Pris en charge">Pris en charge</option><option value="Remplacement expédié">Remplacement expédié</option><option value="Réparé sur place">Réparé sur place</option><option value="Résolu">Résolus</option>';
             }
             renderView();
         }
@@ -457,10 +488,12 @@
             var filterVal = document.getElementById('statusFilter').value;
             var containerOrders = document.getElementById('ordersContainer');
             var containerDevis = document.getElementById('devisContainer');
+            var containerSav = document.getElementById('savContainer');
             var empty = document.getElementById('emptyContainer');
 
             if (CURRENT_TAB === 'orders') {
                 containerDevis.style.display = 'none';
+                containerSav.style.display = 'none';
                 var items = ORDERS.filter(function(o) {
                     if (filterVal === 'ALL') return true;
                     var st = o.fields.Statut;
@@ -482,11 +515,14 @@
                     var status = (Array.isArray(st) ? st[0] : st) || 'Nouvelle';
                     var statusClass = 'status-' + status.toLowerCase().replace(/\s+/g, '-');
                     var mapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent((f.Entreprise || '') + ' ' + (f.Adresse || ''));
+                    var isConfirmed = f['Reception client'] === true;
 
                     return '<div class="order-card ' + (status === 'Nouvelle' ? 'new-order' : '') + '">' +
                         '<div class="order-card-header">' +
                             '<div>' +
-                                '<div class="order-company">🏪 ' + escapeHtml(f.Entreprise) + '</div>' +
+                                '<div class="order-company">🏪 ' + escapeHtml(f.Entreprise) + ' ' + 
+                                    (isConfirmed ? '<span style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">✓ Réception confirmée par le client</span>' : '') +
+                                '</div>' +
                                 '<div class="order-meta">' +
                                     '<span>📅 ' + formatDate(f.Date) + '</span> &bull; ' +
                                     '<span>' + escapeHtml(f.Formule || 'Formule NFC') + '</span>' +
@@ -501,7 +537,8 @@
                             '<div class="detail-item"><span class="detail-label">Client</span><span class="detail-value">👤 ' + escapeHtml(f['Nom et prénom'] || 'Non renseigné') + '</span></div>' +
                             '<div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value"><a href="tel:' + escapeHtml(f.Telephone) + '">📞 ' + escapeHtml(f.Telephone || 'N/A') + '</a></span></div>' +
                             '<div class="detail-item"><span class="detail-label">Email</span><span class="detail-value"><a href="mailto:' + escapeHtml(f.Email) + '">✉️ ' + escapeHtml(f.Email || 'N/A') + '</a></span></div>' +
-                            '<div class="detail-item"><span class="detail-label">Adresse de livraison</span><span class="detail-value">📍 ' + escapeHtml(f.Adresse || 'N/A') + ' &bull; <a href="' + mapsUrl + '" target="_blank">Google Maps ↗</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Accès Espace Client</span><span class="detail-value">Réf: <strong>' + escapeHtml(f['Code Client'] || '-') + '</strong> &bull; MDP: <strong>' + escapeHtml(f['Mot de passe'] || '-') + '</strong></span></div>' +
+                            '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Adresse de livraison</span><span class="detail-value">📍 ' + escapeHtml(f.Adresse || 'N/A') + ' &bull; <a href="' + mapsUrl + '" target="_blank">Google Maps ↗</a></span></div>' +
                             (f.Lien ? '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Fiche Google Avis</span><span class="detail-value"><a href="' + escapeHtml(f.Lien) + '" target="_blank">🔗 ' + escapeHtml(f.Lien) + ' ↗</a></span></div>' : '') +
                         '</div>' +
                         (f.Message ? '<div class="order-message-box"><strong>Instructions client :</strong> ' + escapeHtml(f.Message) + '</div>' : '') +
@@ -516,8 +553,9 @@
                     '</div>';
                 }).join('');
 
-            } else {
+            } else if (CURRENT_TAB === 'devis') {
                 containerOrders.style.display = 'none';
+                containerSav.style.display = 'none';
                 var itemsDev = DEVIS.filter(function(d) {
                     if (filterVal === 'ALL') return true;
                     var st = d.fields.Statut;
@@ -568,6 +606,64 @@
                                 '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;background:#153821;border-color:#22c55e;color:#4ade80;" onclick="updateStatus(\'' + TABLE_DEVIS + '\', \'' + d.id + '\', \'Validé\')">✓ Validé</button>' +
                             '</div>' +
                             '<div style="font-size:.72rem;color:var(--text-muted);">Réf: ' + d.id + '</div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+
+            } else {
+                // SAV TAB
+                containerOrders.style.display = 'none';
+                containerDevis.style.display = 'none';
+                var itemsSav = SAV_TICKETS.filter(function(s) {
+                    if (filterVal === 'ALL') return true;
+                    var st = s.fields.Statut;
+                    var str = Array.isArray(st) ? st[0] : st;
+                    return str === filterVal;
+                });
+
+                if (itemsSav.length === 0) {
+                    containerSav.style.display = 'none';
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+                containerSav.style.display = 'flex';
+
+                containerSav.innerHTML = itemsSav.map(function(t) {
+                    var f = t.fields || {};
+                    var st = f.Statut;
+                    var status = (Array.isArray(st) ? st[0] : st) || 'Nouveau ticket';
+                    var isLille = (f['Localisation SAV'] || '').indexOf('Lille') !== -1;
+
+                    return '<div class="order-card ' + (status === 'Nouveau ticket' ? 'new-order' : '') + '">' +
+                        '<div class="order-card-header">' +
+                            '<div>' +
+                                '<div class="order-company">🛡️ ' + escapeHtml(f.Entreprise) + '</div>' +
+                                '<div class="order-meta">' +
+                                    '<span>📅 ' + formatDate(f.Date) + '</span> &bull; ' +
+                                    '<span>Réf Commande : ' + escapeHtml(f['Code Commande'] || '-') + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div style="display:flex;align-items:center;gap:10px;">' +
+                                '<span class="status-badge status-en-cours">' + escapeHtml(status) + '</span>' +
+                                '<span style="font-size:.76rem;background:' + (isLille ? 'rgba(34,197,94,.15)' : 'rgba(59,130,246,.15)') + ';color:' + (isLille ? '#4ade80' : '#60a5fa') + ';padding:4px 10px;border-radius:50px;font-weight:700;">' + (isLille ? '📍 Intervention Lille' : '📦 Échange postal') + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="order-details-grid">' +
+                            '<div class="detail-item"><span class="detail-label">Client</span><span class="detail-value">👤 ' + escapeHtml(f.Client || 'Non renseigné') + '</span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value"><a href="tel:' + escapeHtml(f.Telephone) + '">📞 ' + escapeHtml(f.Telephone || 'N/A') + '</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Email</span><span class="detail-value"><a href="mailto:' + escapeHtml(f.Email) + '">✉️ ' + escapeHtml(f.Email || 'N/A') + '</a></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Type de problème</span><span class="detail-value" style="color:#f59e0b;font-weight:700;">⚠️ ' + escapeHtml(f['Type de probleme'] || 'Général') + '</span></div>' +
+                        '</div>' +
+                        (f.Description ? '<div class="order-message-box" style="border-left-color:#f59e0b;"><strong>Description du dysfonctionnement :</strong> ' + escapeHtml(f.Description) + '</div>' : '') +
+                        '<div class="order-actions">' +
+                            '<div class="status-updater">' +
+                                '<span>Action SAV :</span>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;" onclick="updateStatus(\'' + TABLE_SAV + '\', \'' + t.id + '\', \'Pris en charge\')">Pris en charge</button>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;" onclick="updateStatus(\'' + TABLE_SAV + '\', \'' + t.id + '\', \'Remplacement expédié\')">Remplacement expédié</button>' +
+                                '<button class="btn-action" style="padding:4px 10px;font-size:.74rem;background:#153821;border-color:#22c55e;color:#4ade80;" onclick="updateStatus(\'' + TABLE_SAV + '\', \'' + t.id + '\', \'Résolu\')">✓ Résolu</button>' +
+                            '</div>' +
+                            '<div style="font-size:.72rem;color:var(--text-muted);">Ticket: ' + t.id + '</div>' +
                         '</div>' +
                     '</div>';
                 }).join('');
