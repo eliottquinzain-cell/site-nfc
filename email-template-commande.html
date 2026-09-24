@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de commande TapTapNFC</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0d0d0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#e5e7eb;line-height:1.6;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#0d0d0d;padding:30px 10px;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table role="presentation" width="100%" style="max-width:600px;background-color:#141414;border:1px solid #262626;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="padding:32px 30px 24px;background-color:#171717;border-bottom:1px solid #262626;text-align:center;">
+                            <div style="display:inline-block;padding:8px 16px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);border-radius:50px;color:#4ade80;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px;">
+                                ✓ Commande confirmée
+                            </div>
+                            <h1 style="margin:0;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">
+                                ⚡ TapTap<span style="color:#22c55e;">NFC</span>
+                            </h1>
+                            <p style="margin:6px 0 0;font-size:14px;color:#9ca3af;">
+                                Vos cartes d'avis Google sans contact sont en cours de préparation
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding:30px 30px 20px;">
+                            <p style="margin:0 0 16px;font-size:16px;color:#f3f4f6;">
+                                Bonjour <strong>{{nom}}</strong>,
+                            </p>
+                            <p style="margin:0 0 24px;font-size:14px;color:#9ca3af;line-height:1.6;">
+                                Merci pour votre commande pour <strong style="color:#ffffff;">{{entreprise}}</strong> ! Eliott prend en charge la programmation sur mesure de vos cartes NFC pour booster vos avis Google.
+                            </p>
+
+                            <!-- Order Reference Card -->
+                            <table role="presentation" width="100%" style="background-color:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+                                <tr>
+                                    <td>
+                                        <div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:8px;">
+                                            Récapitulatif de votre commande
+                                        </div>
+                                        <table role="presentation" width="100%" style="font-size:14px;color:#d1d5db;">
+                                            <tr>
+                                                <td style="padding:4px 0;color:#9ca3af;">Numéro de commande :</td>
+                                                <td style="padding:4px 0;text-align:right;font-weight:700;color:#38bdf8;font-family:monospace;font-size:15px;">{{codeClient}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#9ca3af;">Formule choisie :</td>
+                                                <td style="padding:4px 0;text-align:right;font-weight:600;color:#ffffff;">{{formule}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#9ca3af;">Montant :</td>
+                                                <td style="padding:4px 0;text-align:right;font-weight:700;color:#4ade80;">{{prix}} €</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#9ca3af;">Adresse de livraison :</td>
+                                                <td style="padding:4px 0;text-align:right;color:#e5e7eb;">{{adresse}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:4px 0;color:#9ca3af;">Paiement :</td>
+                                                <td style="padding:4px 0;text-align:right;color:#e5e7eb;">À la livraison</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Client Space Credentials Box -->
+                            <table role="presentation" width="100%" style="background:linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.08));border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:22px;margin-bottom:28px;">
+                                <tr>
+                                    <td>
+                                        <div style="display:flex;align-items:center;margin-bottom:10px;">
+                                            <span style="font-size:18px;margin-right:8px;">👤</span>
+                                            <h3 style="margin:0;font-size:16px;font-weight:700;color:#ffffff;">
+                                                Votre Espace Client est activé
+                                            </h3>
+                                        </div>
+                                        <p style="margin:0 0 16px;font-size:13px;color:#9ca3af;line-height:1.5;">
+                                            Connectez-vous pour suivre la fabrication de vos cartes, valider la bonne réception à la livraison et accéder à votre <strong>Garantie à vie & SAV</strong> :
+                                        </p>
+
+                                        <table role="presentation" width="100%" style="background-color:#141414;border:1px solid #262626;border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:13px;">
+                                            <tr>
+                                                <td style="color:#9ca3af;padding:3px 0;">Identifiant (Email) :</td>
+                                                <td style="color:#ffffff;font-weight:600;text-align:right;">{{email}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#9ca3af;padding:3px 0;">Numéro de commande :</td>
+                                                <td style="color:#38bdf8;font-weight:700;text-align:right;font-family:monospace;">{{codeClient}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#9ca3af;padding:3px 0;">Mot de passe choisi :</td>
+                                                <td style="color:#ffffff;font-weight:600;text-align:right;">{{motDePasse}}</td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- CTA Button -->
+                                        <div style="text-align:center;">
+                                            <a href="https://taptapnfc.netlify.app/client.html" style="display:inline-block;background-color:#22c55e;color:#0a0a0a;text-decoration:none;font-weight:700;font-size:14px;padding:12px 28px;border-radius:8px;box-shadow:0 4px 14px rgba(34,197,94,0.35);">
+                                                Accéder à mon Espace Client ➔
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Next Steps -->
+                            <h4 style="margin:0 0 12px;font-size:14px;color:#ffffff;text-transform:uppercase;letter-spacing:0.04em;">
+                                Prochaines étapes :
+                            </h4>
+                            <table role="presentation" width="100%" style="font-size:13px;color:#9ca3af;margin-bottom:24px;">
+                                <tr>
+                                    <td width="28" valign="top" style="padding-bottom:10px;">
+                                        <span style="display:inline-block;width:20px;height:20px;background:#262626;color:#ffffff;border-radius:50%;text-align:center;line-height:20px;font-weight:700;font-size:11px;">1</span>
+                                    </td>
+                                    <td style="padding-bottom:10px;">
+                                        <strong style="color:#e5e7eb;">Programmation & Gravure :</strong> Configuration directe de votre fiche Google Avis sur vos puces NFC haute portée.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="28" valign="top" style="padding-bottom:10px;">
+                                        <span style="display:inline-block;width:20px;height:20px;background:#262626;color:#ffffff;border-radius:50%;text-align:center;line-height:20px;font-weight:700;font-size:11px;">2</span>
+                                    </td>
+                                    <td style="padding-bottom:10px;">
+                                        <strong style="color:#e5e7eb;">Contrôle qualité :</strong> Test de détection sans contact sur iPhone et smartphones Android.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="28" valign="top">
+                                        <span style="display:inline-block;width:20px;height:20px;background:#262626;color:#ffffff;border-radius:50%;text-align:center;line-height:20px;font-weight:700;font-size:11px;">3</span>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#e5e7eb;">Livraison & Remise :</strong> Eliott vous contacte par téléphone sous 24 h pour convenir de la livraison en main propre.
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding:22px 30px;background-color:#111111;border-top:1px solid #262626;text-align:center;font-size:12px;color:#6b7280;line-height:1.6;">
+                            <p style="margin:0 0 6px;">
+                                Une question ou une modification sur votre commande ?
+                            </p>
+                            <p style="margin:0 0 12px;color:#9ca3af;">
+                                Eliott &bull; 📞 <strong>06 12 34 56 78</strong> &bull; ✉️ <a href="mailto:equinzain@gmail.com" style="color:#38bdf8;text-decoration:none;">equinzain@gmail.com</a>
+                            </p>
+                            <p style="margin:0;font-size:11px;color:#4b5563;">
+                                © 2026 TapTapNFC - Métropole Lilloise & Région Hauts-de-France. Cartes NFC professionnelles prêtes à l'emploi.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
