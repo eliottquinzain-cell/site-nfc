@@ -597,7 +597,7 @@
     </main>
 
     <script>
-        var API_ENDPOINT = '/.netlify/functions/api';
+        var API_ENDPOINT = window.location.hostname.includes('netlify') ? '/.netlify/functions/api' : '/api';
         var BASE_ID = 'apptiTaUP2cOr59kx';
         var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
         var TABLE_DEVIS = 'tbl8jxUNNwo4oA2eq';
