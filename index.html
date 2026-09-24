@@ -289,6 +289,7 @@
             <a href="#garantie">Garantie</a>
             <a href="#livraison">Livraison</a>
             <a href="#faq">FAQ</a>
+            <a href="/client.html" style="color:#f3f4f6;display:inline-flex;align-items:center;gap:6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Espace Client</a>
             <a href="#contact" class="btn btn-primary" style="padding:7px 18px;font-size:.8rem;">Contact</a>
         </nav>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -663,6 +664,12 @@
                         <label for="orderPhone">Téléphone <span class="req">*</span></label>
                         <input type="tel" id="orderPhone" placeholder="06 12 34 56 78" required>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderPassword">Créer un mot de passe pour votre Espace Client <span class="req">*</span></label>
+                    <input type="password" id="orderPassword" minlength="6" placeholder="Au moins 6 caractères" required autocomplete="new-password">
+                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">🔒 Permet de suivre votre commande et d'activer votre garantie à vie</div>
                 </div>
             </div>
 
@@ -1217,9 +1224,12 @@ async function submitOrder(e){
         n = document.getElementById('orderName').value,
         m = document.getElementById('orderEmail').value,
         p = document.getElementById('orderPhone').value,
+        pwd = document.getElementById('orderPassword') ? document.getElementById('orderPassword').value : '',
         a = document.getElementById('orderAddress').value,
         k = document.getElementById('orderLink').value,
         g = document.getElementById('orderMessage').value;
+
+    var codeClient = 'TAP-' + Math.floor(1000 + Math.random() * 9000);
 
     if (btn) { btn.disabled = true; }
     if (btnText) { btnText.textContent = 'Validation en cours...'; }
@@ -1238,6 +1248,8 @@ async function submitOrder(e){
         nom: n,
         email: m,
         telephone: p,
+        motDePasse: pwd,
+        codeClient: codeClient,
         adresse: a,
         lienGoogle: k || '',
         message: g || '',
@@ -1246,13 +1258,23 @@ async function submitOrder(e){
 
     await sendToWebhook(payload);
 
+    try {
+        localStorage.setItem('nfc_client_auth', JSON.stringify({ email: m, code: codeClient, name: n, business: b }));
+    } catch(e){}
+
     if (btn) { btn.disabled = false; }
     if (btnText) { btnText.textContent = 'Confirmer ma commande'; }
     if (btnSpinner) { btnSpinner.style.display = 'none'; }
 
     var subEl = document.getElementById('orderSuccessSubtitle');
     if (subEl) {
-        subEl.textContent = 'Merci ' + n + ' ! Votre commande pour « ' + b + ' » (' + formule + ') a bien été transmise.';
+        subEl.innerHTML = 'Merci ' + n + ' ! Votre commande pour « ' + b + ' » (' + formule + ') a bien été transmise.<br><br>' +
+        '<div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;margin-top:8px;text-align:left;">' +
+            '<div style="font-size:.76rem;color:#22c55e;font-weight:700;letter-spacing:.04em;text-transform:uppercase;">✓ Espace Client activé</div>' +
+            '<div style="font-size:.84rem;color:#f3f4f6;margin-top:4px;">Référence commande : <strong>' + codeClient + '</strong></div>' +
+            '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Identifiant : ' + m + '</div>' +
+            '<a href="/client.html" class="btn btn-primary" style="margin-top:12px;width:100%;justify-content:center;font-size:.84rem;padding:9px 14px;">Accéder à mon Espace Client ➔</a>' +
+        '</div>';
     }
 
     checkoutView.style.display = 'none';
