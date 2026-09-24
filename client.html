@@ -187,6 +187,11 @@
                 <span style="font-size:.8rem;color:var(--text-muted);">Référence : <strong id="dashOrderRef" style="color:#f3f4f6;">TAP-XXXX</strong></span>
             </div>
 
+            <div id="dashStageBanner" style="background:#141414;border:1px solid #262626;padding:10px 14px;border-radius:8px;font-size:.82rem;color:#60a5fa;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                <span>⚡ Étape de préparation : <strong id="dashCurrentStage" style="color:#fff;">1. Prise en charge</strong></span>
+                <span id="dashEstDelivery" style="color:#4ade80;font-weight:600;"></span>
+            </div>
+
             <div class="timeline-steps">
                 <div class="timeline-step done" id="step1">
                     <div class="step-circle">✓</div>
@@ -392,9 +397,19 @@
                 googleLinkEl.textContent = 'Lien en cours de configuration par Eliott';
             }
 
+            if (order.etape) {
+                document.getElementById('dashCurrentStage').textContent = order.etape;
+            }
+            if (order.dateLivraisonPrevue) {
+                document.getElementById('dashEstDelivery').textContent = '🚚 ' + order.dateLivraisonPrevue;
+            } else {
+                document.getElementById('dashEstDelivery').textContent = '';
+            }
+
             // Update Timeline
             var status = order.status || 'Nouvelle';
             var isReceived = order.receptionClient === true;
+            var etapeStr = order.etape || '';
 
             var s1 = document.getElementById('step1');
             var s2 = document.getElementById('step2');
@@ -406,13 +421,16 @@
             s3.className = 'timeline-step';
             s4.className = 'timeline-step';
 
-            if (status === 'En cours') {
-                s2.className = 'timeline-step done';
-                s3.className = 'timeline-step active';
-            } else if (status === 'Livré' || isReceived) {
+            if (etapeStr.indexOf('6.') !== -1 || status === 'Livré' || isReceived) {
                 s2.className = 'timeline-step done';
                 s3.className = 'timeline-step done';
                 s4.className = 'timeline-step done';
+            } else if (etapeStr.indexOf('5.') !== -1) {
+                s2.className = 'timeline-step done';
+                s3.className = 'timeline-step active';
+            } else if (etapeStr.indexOf('2.') !== -1 || etapeStr.indexOf('3.') !== -1 || etapeStr.indexOf('4.') !== -1 || status === 'En cours') {
+                s2.className = 'timeline-step done';
+                s3.className = 'timeline-step active';
             } else {
                 s2.className = 'timeline-step active';
             }
