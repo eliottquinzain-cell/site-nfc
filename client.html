@@ -316,25 +316,11 @@
     </div>
 
     <script>
-        var BASE_ID = 'apptiTaUP2cOr59kx';
-        var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
+        var API_ENDPOINT = '/.netlify/functions/api';
         var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
-        var ENC_TOKEN = '41534750016b71444077754263610251401c0b510405010d095355515507035605560152050a00075006560104500751020400570100045509025007535350500300045054500b560450035703010a065706';
 
         var CURRENT_ORDER = null;
-
-        function unXorHex(hexStr, key) {
-            try {
-                var res = '';
-                for (var i = 0; i < hexStr.length; i += 2) {
-                    var c = parseInt(hexStr.substr(i, 2), 16);
-                    res += String.fromCharCode(c ^ key.charCodeAt((i / 2) % key.length));
-                }
-                return res;
-            } catch(e) { return null; }
-        }
-
-        var AIRTABLE_PAT = unXorHex(ENC_TOKEN, '1234');
+        var CURRENT_AUTH = null;
 
         async function handleClientLogin(e) {
             if (e) e.preventDefault();
@@ -345,48 +331,35 @@
 
             if (!email || !pwd) return false;
             btn.disabled = true;
-            btn.textContent = 'Vérification en cours...';
+            btn.textContent = 'Connexion sécurisée en cours...';
+            err.style.display = 'none';
 
             try {
-                var filterFormula = "LOWER({Email}) = '" + email.replace(/'/g, "\\'") + "'";
-                var url = 'https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?filterByFormula=' + encodeURIComponent(filterFormula);
-                
-                var res = await fetch(url, {
-                    headers: { 'Authorization': 'Bearer ' + AIRTABLE_PAT }
+                var res = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'client-login',
+                        email: email,
+                        password: pwd
+                    })
                 });
 
-                if (!res.ok) throw new Error('Erreur de connexion au serveur');
-                var data = await res.json();
-                var records = data.records || [];
+                var data = await res.json().catch(function() { return {}; });
 
-                if (records.length === 0) {
-                    throw new Error('Aucune commande trouvée pour cet email.');
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Identifiants invalides');
                 }
 
-                // Check password match (Mot de passe OR Code Client)
-                var matched = records.find(function(r) {
-                    var f = r.fields || {};
-                    var storedPwd = (f['Mot de passe'] || '').trim();
-                    var storedCode = (f['Code Client'] || '').trim().toUpperCase();
-                    var inputUpper = pwd.toUpperCase();
+                CURRENT_ORDER = data.order;
+                CURRENT_AUTH = { email: email, pwd: pwd };
 
-                    return (storedPwd && storedPwd === pwd) || 
-                           (storedCode && storedCode === inputUpper) ||
-                           (pwd === '1234'); // admin bypass
-                });
-
-                if (!matched) {
-                    throw new Error('Mot de passe ou référence incorrecte.');
-                }
-
-                CURRENT_ORDER = matched;
                 localStorage.setItem('nfc_client_session', JSON.stringify({
                     email: email,
-                    recordId: matched.id
+                    pwd: pwd
                 }));
 
-                displayDashboard(matched);
-                err.style.display = 'none';
+                displayDashboard(data.order);
 
             } catch(error) {
                 err.textContent = error.message || 'Identifiants invalides';
@@ -398,29 +371,29 @@
             return false;
         }
 
-        function displayDashboard(record) {
-            var f = record.fields || {};
+        function displayDashboard(order) {
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('dashboardContainer').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'inline-block';
 
-            document.getElementById('dashClientName').textContent = f['Nom et prénom'] || 'Client';
-            document.getElementById('dashBusinessName').textContent = f.Entreprise || 'Votre Établissement';
-            document.getElementById('dashOrderRef').textContent = f['Code Client'] || record.id;
-            document.getElementById('dashFormule').textContent = f.Formule || 'Pack cartes NFC';
-            document.getElementById('dashPrice').textContent = (f.Prix ? f.Prix + '€' : '70€');
-            document.getElementById('dashAddress').textContent = f.Adresse || 'Non renseignée';
+            document.getElementById('dashClientName').textContent = order.name || 'Client';
+            document.getElementById('dashBusinessName').textContent = order.business || 'Votre Établissement';
+            document.getElementById('dashOrderRef').textContent = order.codeClient || order.orderId;
+            document.getElementById('dashFormule').textContent = order.formule || 'Pack cartes NFC';
+            document.getElementById('dashPrice').textContent = order.prix || '70€';
+            document.getElementById('dashAddress').textContent = order.address || 'Non renseignée';
 
             var googleLinkEl = document.getElementById('dashGoogleLink');
-            if (f.Lien && f.Lien.indexOf('http') === 0) {
-                googleLinkEl.innerHTML = '<a href="' + f.Lien + '" target="_blank" rel="noopener">🔗 ' + f.Lien + ' ↗ (Tester)</a>';
+            if (order.googleLink && order.googleLink.indexOf('http') === 0) {
+                var safeUrl = order.googleLink.replace(/"/g, '&quot;');
+                googleLinkEl.innerHTML = '<a href="' + safeUrl + '" target="_blank" rel="noopener">🔗 ' + safeUrl + ' ↗ (Tester)</a>';
             } else {
                 googleLinkEl.textContent = 'Lien en cours de configuration par Eliott';
             }
 
             // Update Timeline
-            var status = (Array.isArray(f.Statut) ? f.Statut[0] : f.Statut) || 'Nouvelle';
-            var isReceived = f['Reception client'] === true;
+            var status = order.status || 'Nouvelle';
+            var isReceived = order.receptionClient === true;
 
             var s1 = document.getElementById('step1');
             var s2 = document.getElementById('step2');
@@ -453,37 +426,37 @@
         }
 
         async function confirmReception() {
-            if (!CURRENT_ORDER) return;
+            if (!CURRENT_ORDER || !CURRENT_AUTH) return;
             var btn = document.getElementById('confirmBtn');
             btn.disabled = true;
             btn.textContent = 'Validation...';
 
             try {
-                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '/' + CURRENT_ORDER.id, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': 'Bearer ' + AIRTABLE_PAT,
-                        'Content-Type': 'application/json'
-                    },
+                var res = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        fields: {
-                            'Reception client': true,
-                            'Statut': ['Livré']
-                        }
+                        action: 'client-confirm-reception',
+                        orderId: CURRENT_ORDER.orderId,
+                        email: CURRENT_AUTH.email,
+                        password: CURRENT_AUTH.pwd
                     })
                 });
 
-                if (res.ok) {
-                    CURRENT_ORDER.fields['Reception client'] = true;
-                    CURRENT_ORDER.fields['Statut'] = ['Livré'];
+                var data = await res.json().catch(function() { return {}; });
+
+                if (res.ok && data.success) {
+                    CURRENT_ORDER.receptionClient = true;
+                    CURRENT_ORDER.status = 'Livré';
                     displayDashboard(CURRENT_ORDER);
                 } else {
-                    alert('Erreur lors de la confirmation.');
+                    alert(data.error || 'Erreur lors de la confirmation.');
                 }
             } catch(e) {
-                alert('Erreur de connexion.');
+                alert('Erreur de connexion au serveur.');
             } finally {
                 btn.disabled = false;
+                btn.textContent = '✓ Oui, j\'ai bien reçu mes cartes NFC';
             }
         }
 
@@ -515,11 +488,11 @@
             var payload = {
                 type: 'SAV',
                 date: new Date().toISOString(),
-                entreprise: CURRENT_ORDER.fields.Entreprise || 'Client',
-                nom: CURRENT_ORDER.fields['Nom et prénom'] || '',
-                email: CURRENT_ORDER.fields.Email || '',
-                telephone: CURRENT_ORDER.fields.Telephone || '',
-                codeCommande: CURRENT_ORDER.fields['Code Client'] || CURRENT_ORDER.id,
+                entreprise: CURRENT_ORDER.business || 'Client',
+                nom: CURRENT_ORDER.name || '',
+                email: CURRENT_ORDER.email || '',
+                telephone: CURRENT_ORDER.phone || '',
+                codeCommande: CURRENT_ORDER.codeClient || CURRENT_ORDER.orderId,
                 probleme: problem,
                 localisation: loc,
                 message: desc
@@ -556,13 +529,13 @@
 
         // Auto-login if session exists
         async function checkAutoLogin() {
-            var raw = localStorage.getItem('nfc_client_session') || localStorage.getItem('nfc_client_auth');
+            var raw = localStorage.getItem('nfc_client_session');
             if (raw) {
                 try {
                     var sess = JSON.parse(raw);
-                    if (sess.email) {
+                    if (sess.email && sess.pwd) {
                         document.getElementById('clientEmail').value = sess.email;
-                        if (sess.code) document.getElementById('clientPassword').value = sess.code;
+                        document.getElementById('clientPassword').value = sess.pwd;
                         handleClientLogin();
                     }
                 } catch(e){}
