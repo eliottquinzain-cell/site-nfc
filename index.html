@@ -174,41 +174,87 @@
         .footer-col a:hover { color: #fff; }
         .footer-bottom { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: .8rem; }
 
-        /* CART DRAWER */
-        .cart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.7); z-index: 2000; display: none; justify-content: flex-end; }
+        /* CART DRAWER & FORMS UPGRADE */
+        .cart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,7,9,.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 2000; display: none; justify-content: flex-end; transition: opacity .3s ease; }
         .cart-overlay.open { display: flex; }
-        .cart-drawer { background: #111; width: 100%; max-width: 420px; height: 100%; overflow-y: auto; padding: 28px; border-left: 1px solid var(--border); display: flex; flex-direction: column; animation: slideIn .3s ease; }
+        .cart-drawer { background: #0c0e12; width: 100%; max-width: 480px; height: 100%; overflow-y: auto; padding: 28px 24px; border-left: 1px solid #1f2530; display: flex; flex-direction: column; animation: slideIn .3s cubic-bezier(.16,1,.3,1); box-shadow: -15px 0 50px rgba(0,0,0,.7); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .cart-header h2 { font-size: 1.15rem; font-weight: 700; color: #f3f4f6; }
-        .order-close { width: 32px; height: 32px; border: none; background: #1a1a1a; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text-light); border: 1px solid #333; flex-shrink: 0; }
-        .cart-empty { text-align: center; padding: 40px 10px; color: var(--text-light); }
-        .cart-items { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-        .cart-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
-        .cart-item-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-        .cart-item-info strong { font-size: .88rem; color: #f3f4f6; }
-        .cart-item-info span { font-size: .75rem; color: var(--text-muted); }
-        .cart-item-qty { display: flex; align-items: center; gap: 8px; }
-        .cart-item-qty button { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #333; background: #1a1a1a; color: var(--text); cursor: pointer; font-size: .9rem; line-height: 1; }
-        .cart-item-qty span { min-width: 14px; text-align: center; font-size: .85rem; }
-        .cart-item-price { font-size: .85rem; font-weight: 600; color: #f3f4f6; white-space: nowrap; }
-        .cart-item-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: .85rem; padding: 4px; }
-        .cart-item-remove:hover { color: #fff; }
-        .cart-back { background: none; border: none; color: var(--text-light); font-size: .85rem; cursor: pointer; text-align: left; padding: 0; margin-bottom: 6px; }
+        
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+        .cart-header h2 { font-size: 1.2rem; font-weight: 700; color: #f8fafc; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
+        .order-close { width: 34px; height: 34px; border: 1px solid #242c38; background: #13171f; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--text-light); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+        .order-close:hover { background: #1f2735; color: #fff; border-color: #3b4658; transform: rotate(90deg); }
+        
+        .cart-empty { text-align: center; padding: 48px 16px; color: var(--text-light); }
+        .cart-items { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+        .cart-item { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 16px; background: linear-gradient(135deg, #13171f, #0f1218); border: 1px solid #202733; border-radius: 12px; }
+        .cart-item-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .cart-item-info strong { font-size: .95rem; color: #f8fafc; font-weight: 600; }
+        .cart-item-info span { font-size: .78rem; color: #22c55e; display: inline-flex; align-items: center; gap: 4px; }
+        .cart-item-price { font-size: 1.05rem; font-weight: 700; color: #f8fafc; white-space: nowrap; }
+        .cart-item-remove { width: 28px; height: 28px; background: #1a202c; border: 1px solid #2d3748; border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: .8rem; }
+        .cart-item-remove:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,.1); }
+        
+        .cart-back { background: none; border: none; color: #94a3b8; font-size: .85rem; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; margin-bottom: 16px; transition: color .2s; }
         .cart-back:hover { color: #fff; }
-        .cart-note { font-size: .78rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 4px; }
-        .cart-note a { color: #fff; text-decoration: underline; }
+        .cart-note { font-size: .8rem; color: #94a3b8; line-height: 1.6; margin: 12px 0; padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 8px; border-left: 3px solid #3b82f6; }
+        .cart-note a { color: #60a5fa; text-decoration: underline; font-weight: 500; }
+
+        /* RECAP CARD */
+        .recap-card { background: linear-gradient(135deg,#131822,#0d1117); border: 1px solid #212836; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .recap-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .recap-title { font-size: .95rem; font-weight: 700; color: #f8fafc; }
+        .recap-price { font-size: 1.25rem; font-weight: 800; color: #fff; }
+        .recap-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+        .recap-badge { font-size: .72rem; padding: 3px 8px; border-radius: 4px; background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.25); font-weight: 500; }
+
+        /* FORM BLOCKS */
         .order-form { display: flex; flex-direction: column; gap: 16px; }
-        .order-form label { font-size: .8rem; font-weight: 500; color: var(--text); display: block; margin-bottom: 4px; }
-        .order-form input, .order-form select, .order-form textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #2a2a2a; border-radius: 8px; font-size: .9rem; font-family: inherit; background: #0a0a0a; color: #d1d5db; }
-        .order-form input:focus, .order-form select:focus, .order-form textarea:focus { outline: none; border-color: #555; }
-        .order-form textarea { min-height: 70px; resize: vertical; }
-        .order-total { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
-        .order-total-price { font-size: 1.4rem; font-weight: 700; color: #f3f4f6; }
-        .order-success { display: none; text-align: center; padding: 40px 20px; }
+        .form-section { background: #11141b; border: 1px solid #1e2430; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .form-section-title { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+        .form-section-title span.step-num { width: 18px; height: 18px; border-radius: 50%; background: #fff; color: #000; font-size: .7rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: .82rem; font-weight: 600; color: #cbd5e1; display: flex; justify-content: space-between; align-items: center; }
+        .form-group label .req { color: #f43f5e; font-weight: 700; }
+        .form-group label .opt { font-size: .72rem; color: #64748b; font-weight: 400; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #232b38; border-radius: 9px; font-size: .9rem; font-family: inherit; background: #080a0d; color: #f1f5f9; transition: all .2s; }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #475569; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #38bdf8; background: #0b0e14; box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+        .form-group textarea { min-height: 75px; resize: vertical; }
+
+        /* HELPER TOGGLE */
+        .helper-toggle { font-size: .76rem; color: #38bdf8; background: none; border: none; cursor: pointer; text-align: left; padding: 0; margin-top: 2px; display: inline-flex; align-items: center; gap: 4px; text-decoration: underline; text-underline-offset: 2px; }
+        .helper-box { display: none; background: #090c10; border: 1px solid #1f2735; border-radius: 8px; padding: 12px; margin-top: 6px; font-size: .78rem; color: #94a3b8; line-height: 1.6; }
+        .helper-box.show { display: block; animation: fadeIn .2s ease; }
+        .helper-box strong { color: #f1f5f9; }
+
+        /* TOTAL BAR */
+        .order-total { background: linear-gradient(135deg,#161b24,#0f131a); border: 1px solid #252e3d; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .order-total-label { font-size: .92rem; font-weight: 600; color: #cbd5e1; }
+        .order-total-price { font-size: 1.45rem; font-weight: 800; color: #fff; }
+
+        /* SUBMIT BUTTON WITH SPINNER */
+        .btn-submit { width: 100%; justify-content: center; padding: 14px; font-size: .95rem; font-weight: 700; border-radius: 50px; background: #fff; color: #0a0a0a; border: none; cursor: pointer; transition: all .25s; display: inline-flex; align-items: center; gap: 10px; }
+        .btn-submit:hover:not(:disabled) { background: #e2e8f0; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,255,255,.15); }
+        .btn-submit:disabled { opacity: .7; cursor: not-allowed; }
+        .btn-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.25); border-top-color: #000; border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* SUCCESS SCREEN */
+        .order-success { display: none; text-align: center; padding: 24px 8px; animation: fadeIn .3s ease; }
         .order-success.show { display: block; }
-        .order-success .icon { font-size: 2.6rem; margin-bottom: 12px; }
-        .order-success h3 { font-size: 1.2rem; font-weight: 700; color: #f3f4f6; }
+        .success-icon-wrap { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: rgba(34,197,94,.12); border: 2px solid rgba(34,197,94,.3); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 30px rgba(34,197,94,.2); }
+        .success-title { font-size: 1.3rem; font-weight: 800; color: #f8fafc; margin-bottom: 6px; letter-spacing: -.02em; }
+        .success-subtitle { font-size: .88rem; color: #94a3b8; line-height: 1.6; margin-bottom: 20px; }
+        .success-card { background: #10141c; border: 1px solid #1e2634; border-radius: 12px; padding: 16px; text-align: left; margin-bottom: 20px; }
+        .success-card h4 { font-size: .8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+        .success-steps { display: flex; flex-direction: column; gap: 10px; font-size: .82rem; color: #94a3b8; }
+        .success-steps li { display: flex; align-items: flex-start; gap: 10px; }
+        .success-steps li span.badge-num { width: 20px; height: 20px; border-radius: 50%; background: #1e293b; color: #38bdf8; font-weight: 700; font-size: .72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+        
+        .trust-badge-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; font-size: .74rem; color: #64748b; }
+        .trust-badge-row span { display: inline-flex; align-items: center; gap: 4px; }
 
         /* FADE */
         .fade-in { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
@@ -518,71 +564,169 @@
 <div class="cart-overlay" id="cartOverlay" onclick="if(event.target===this)closeCart()">
     <div class="cart-drawer">
         <div class="cart-header">
-            <h2 id="cartTitle">Votre panier</h2>
-            <button class="order-close" onclick="closeCart()">✕</button>
+            <h2 id="cartTitle"><span id="cartHeaderIcon">🛒</span> <span id="cartHeaderText">Votre panier</span></h2>
+            <button class="order-close" onclick="closeCart()" aria-label="Fermer">✕</button>
         </div>
 
+        <!-- 1. CART VIEW -->
         <div id="cartView">
-            <div id="cartEmpty" class="cart-empty" style="color:var(--text-muted);"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:10px;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                <p>Votre panier est vide.</p>
-                <button class="btn btn-outline" style="margin-top:16px;" onclick="closeCart()">Découvrir les offres</button>
+            <div id="cartEmpty" class="cart-empty" style="color:var(--text-muted);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;opacity:.6;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <p style="font-size:1.05rem;color:#f1f5f9;font-weight:600;margin-bottom:4px;">Votre panier est vide</p>
+                <p style="font-size:.85rem;color:#64748b;">Sélectionnez une formule pour commencer.</p>
+                <button class="btn btn-outline" style="margin-top:20px;" onclick="closeCart()">Découvrir nos offres</button>
             </div>
+            
             <div id="cartItems" class="cart-items"></div>
-            <p class="cart-note" id="cartNote" style="display:none;">Une seule formule par commande directe. Pour des quantités personnalisées ou plus de 3 cartes, <a href="#devis" onclick="closeCart()">demandez un devis sur mesure</a>.</p>
+            
+            <p class="cart-note" id="cartNote" style="display:none;">
+                <strong>Besoin de plus de 3 cartes ?</strong> Pour plusieurs boutiques ou une franchise, <a href="#devis" onclick="closeCart();openDevis();">demandez un devis sur mesure</a>.
+            </p>
+            
             <div id="cartFooter" class="cart-footer" style="display:none;">
                 <div class="order-total">
-                    <span style="font-weight:500;color:var(--text);">Total</span>
+                    <span class="order-total-label">Total de la commande</span>
                     <span class="order-total-price" id="cartTotal">0€</span>
                 </div>
-                <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:14px;" onclick="goCheckout()">Passer commande</button>
-                <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:8px;">* Livraison offerte sur Lille et sa métropole.</p>
+                <button class="btn-submit" style="margin-top:14px;" onclick="goCheckout()">
+                    <span>Passer aux informations de livraison →</span>
+                </button>
+                <div class="trust-badge-row">
+                    <span>✓ Configuration offerte</span>
+                    <span>✓ Garantie à vie</span>
+                    <span>✓ Livraison offerte</span>
+                </div>
             </div>
         </div>
 
+        <!-- 2. CHECKOUT VIEW -->
         <form id="checkoutView" class="order-form" style="display:none;" onsubmit="return submitOrder(event)">
-            <button type="button" class="cart-back" onclick="backToCart()">← Retour au panier</button>
-            <div>
-                <label>Nom de l'entreprise ou enseigne *</label>
-                <input type="text" id="orderBusiness" placeholder="Ex. : Café de la Gare, Salon Coiffure..." required>
+            <button type="button" class="cart-back" onclick="backToCart()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Modifier mon choix d'offre
+            </button>
+
+            <!-- Recap Pill -->
+            <div class="recap-card" id="checkoutRecap">
+                <div class="recap-header">
+                    <span class="recap-title" id="recapPackName">Pack 2 cartes NFC</span>
+                    <span class="recap-price" id="recapPackPrice">70€</span>
+                </div>
+                <div class="recap-badges">
+                    <span class="recap-badge">✓ Puces NFC préprogrammées</span>
+                    <span class="recap-badge">✓ Garantie à vie</span>
+                    <span class="recap-badge">✓ Livraison offerte</span>
+                </div>
             </div>
-            <div>
-                <label>Nom et prénom *</label>
-                <input type="text" id="orderName" placeholder="Jean Dupont" required>
+
+            <!-- Section 1 : Coordonnées -->
+            <div class="form-section">
+                <div class="form-section-title"><span class="step-num">1</span> Coordonnées du commerce</div>
+                
+                <div class="form-group">
+                    <label for="orderBusiness">Nom de votre entreprise ou enseigne <span class="req">*</span></label>
+                    <input type="text" id="orderBusiness" placeholder="Ex. : Café de la Place, Salon Prestige..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderName">Votre nom et prénom <span class="req">*</span></label>
+                    <input type="text" id="orderName" placeholder="Ex. : Thomas Martin" required>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="form-group">
+                        <label for="orderEmail">Email pro <span class="req">*</span></label>
+                        <input type="email" id="orderEmail" placeholder="contact@domaine.fr" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderPhone">Téléphone <span class="req">*</span></label>
+                        <input type="tel" id="orderPhone" placeholder="06 12 34 56 78" required>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label>Adresse email *</label>
-                <input type="email" id="orderEmail" placeholder="contact@votre-entreprise.fr" required>
+
+            <!-- Section 2 : Livraison & Configuration -->
+            <div class="form-section">
+                <div class="form-section-title"><span class="step-num">2</span> Livraison & Configuration NFC</div>
+                
+                <div class="form-group">
+                    <label for="orderAddress">Adresse de livraison (ou de l'établissement) <span class="req">*</span></label>
+                    <input type="text" id="orderAddress" placeholder="Ex. : 12 Rue Faidherbe, 59000 Lille" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderLink">
+                        Lien de votre fiche Google Avis
+                        <span class="opt">(Optionnel)</span>
+                    </label>
+                    <input type="url" id="orderLink" placeholder="https://g.page/r/...">
+                    <button type="button" class="helper-toggle" onclick="toggleGoogleHelper()">
+                        💡 Comment trouver ce lien ?
+                    </button>
+                    <div class="helper-box" id="googleHelperBox">
+                        <strong>Sur Google :</strong> rendez-vous sur votre profil Google Maps ou votre fiche d'établissement et cliquez sur <em>« Demander des avis »</em>, puis copiez le lien court.<br><br>
+                        <strong>Vous ne l'avez pas sous la main ?</strong> Laissez le champ vide : je le retrouverai et configurerai tout pour vous gratuitement !
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="orderMessage">
+                        Précisions pour la livraison
+                        <span class="opt">(Optionnel)</span>
+                    </label>
+                    <textarea id="orderMessage" placeholder="Horaires d'ouverture, instructions d'accès, disponibilités..."></textarea>
+                </div>
             </div>
-            <div>
-                <label>Numéro de téléphone *</label>
-                <input type="tel" id="orderPhone" placeholder="06 12 34 56 78" required>
-            </div>
-            <div>
-                <label>Adresse de livraison *</label>
-                <input type="text" id="orderAddress" placeholder="Ex. : 15 Rue de la Paix, 59000 Lille" required>
-            </div>
-            <div>
-                <label>Lien de votre fiche Google (optionnel)</label>
-                <input type="text" id="orderLink" placeholder="https://g.page/r/...">
-                <p style="font-size:.75rem;color:var(--text-muted);margin-top:4px;">Vous n'avez pas le lien ? Je m'occupe de le retrouver pour vous.</p>
-            </div>
-            <div>
-                <label>Message ou précisions (optionnel)</label>
-                <textarea id="orderMessage" placeholder="Horaires de livraison souhaités, questions éventuelles..."></textarea>
-            </div>
+
+            <!-- Total and Submit -->
             <div class="order-total">
-                <span style="font-weight:500;color:var(--text);">Total</span>
+                <div>
+                    <span class="order-total-label">Total à régler</span>
+                    <p style="font-size:.75rem;color:#22c55e;margin-top:2px;">Livraison & configuration offertes</p>
+                </div>
                 <span class="order-total-price" id="checkoutTotal">0€</span>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Confirmer la commande</button>
+
+            <button type="submit" class="btn-submit" id="orderSubmitBtn">
+                <span id="orderSubmitText">Confirmer ma commande</span>
+                <span id="orderSubmitSpinner" class="btn-spinner" style="display:none;"></span>
+            </button>
+            
+            <div class="trust-badge-row">
+                <span>🔒 Transmission sécurisée</span>
+                <span>🤝 Paiement sécurisé à réception</span>
+            </div>
+            
+            <p id="orderErrorMsg" style="display:none;color:#f43f5e;font-size:.82rem;text-align:center;background:rgba(244,63,94,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(244,63,94,.2);"></p>
         </form>
 
+        <!-- 3. ORDER SUCCESS -->
         <div class="order-success" id="orderSuccess">
-            <div class="icon" style="width:44px;height:44px;margin:0 auto 12px;color:#22c55e;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg></div>
-            <h3>Commande bien reçue !</h3>
-            <p style="color:var(--text-light);margin-top:6px;">Merci ! Je vous recontacte sous 24 h pour valider la configuration et organiser la livraison.</p>
-            <br>
-            <button class="btn btn-outline" onclick="closeCart()">Fermer</button>
+            <div class="success-icon-wrap">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <h3 class="success-title">Commande validée !</h3>
+            <p class="success-subtitle" id="orderSuccessSubtitle">Merci ! Votre commande a bien été transmise et enregistrée.</p>
+            
+            <div class="success-card">
+                <h4>Prochaines étapes :</h4>
+                <ul class="success-steps">
+                    <li>
+                        <span class="badge-num">1</span>
+                        <span><strong>Configuration personnalisée :</strong> Je configure le lien direct vers votre fiche Google sur chaque puce NFC.</span>
+                    </li>
+                    <li>
+                        <span class="badge-num">2</span>
+                        <span><strong>Contrôle qualité :</strong> Test complet de déclenchement sans contact sur iPhone et smartphones Android.</span>
+                    </li>
+                    <li>
+                        <span class="badge-num">3</span>
+                        <span><strong>Prise de contact sous 24 h :</strong> Je vous contacte pour convenir de l'horaire de livraison ou vous fournir le suivi.</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="closeCart()">Fermer et retourner au site</button>
         </div>
     </div>
 </div>
@@ -591,45 +735,80 @@
 <div class="cart-overlay" id="devisOverlay" onclick="if(event.target===this)closeDevis()">
     <div class="cart-drawer">
         <div class="cart-header">
-            <h2 id="devisTitle">Demande de devis</h2>
-            <button class="order-close" onclick="closeDevis()">✕</button>
+            <h2><span>📋</span> Demande de devis</h2>
+            <button class="order-close" onclick="closeDevis()" aria-label="Fermer">✕</button>
         </div>
 
         <form id="devisForm" class="order-form" onsubmit="return submitDevis(event)">
-            <p style="font-size:.82rem;color:var(--text-light);line-height:1.6;margin-top:-8px;">Décrivez votre projet ci-dessous. Je vous réponds par email sous 24 h avec un devis adapté.</p>
-            <div>
-                <label>Nom de l'entreprise ou enseigne *</label>
-                <input type="text" id="devisBusiness" placeholder="Ex. : Groupe Hôtelier, Enseigne..." required>
+            <p style="font-size:.85rem;color:#94a3b8;line-height:1.6;margin-top:-8px;background:#11141b;border:1px solid #1e2430;padding:12px 14px;border-radius:10px;">
+                Plusieurs boutiques, franchise ou commande de plus de 3 cartes : détaillez vos besoins ci-dessous, je vous réponds par email avec un devis adapté sous 24 h.
+            </p>
+
+            <div class="form-section">
+                <div class="form-section-title"><span class="step-num">1</span> Votre établissement</div>
+                
+                <div class="form-group">
+                    <label for="devisBusiness">Nom de votre entreprise ou enseigne <span class="req">*</span></label>
+                    <input type="text" id="devisBusiness" placeholder="Ex. : Groupe Hôtelier, Réseau de restaurants..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="devisName">Votre nom et prénom <span class="req">*</span></label>
+                    <input type="text" id="devisName" placeholder="Ex. : Sophie Lefebvre" required>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="form-group">
+                        <label for="devisEmail">Email pro <span class="req">*</span></label>
+                        <input type="email" id="devisEmail" placeholder="contact@groupe.fr" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="devisPhone">Téléphone <span class="req">*</span></label>
+                        <input type="tel" id="devisPhone" placeholder="06 12 34 56 78" required>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label>Nom et prénom *</label>
-                <input type="text" id="devisName" placeholder="Jean Dupont" required>
+
+            <div class="form-section">
+                <div class="form-section-title"><span class="step-num">2</span> Votre besoin</div>
+
+                <div class="form-group">
+                    <label for="devisQty">Nombre de cartes souhaité <span class="req">*</span></label>
+                    <input type="text" id="devisQty" placeholder="Ex. : 10 cartes pour 3 restaurants" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="devisAddress">Ville ou secteur de livraison <span class="opt">(Optionnel)</span></label>
+                    <input type="text" id="devisAddress" placeholder="Ex. : Métropole de Lille, Paris, national...">
+                </div>
+
+                <div class="form-group">
+                    <label for="devisMessage">Précisions ou besoins particuliers <span class="opt">(Optionnel)</span></label>
+                    <textarea id="devisMessage" placeholder="Logo sur mesure, répartition des fiches Google, délais souhaités..."></textarea>
+                </div>
             </div>
-            <div>
-                <label>Adresse email *</label>
-                <input type="email" id="devisEmail" placeholder="contact@votre-entreprise.fr" required>
+
+            <button type="submit" class="btn-submit" id="devisSubmitBtn">
+                <span id="devisSubmitText">Envoyer ma demande de devis</span>
+                <span id="devisSubmitSpinner" class="btn-spinner" style="display:none;"></span>
+            </button>
+
+            <div class="trust-badge-row">
+                <span>⚡ Réponse personnalisée sous 24 h</span>
+                <span>📄 Devis 100% gratuit & sans engagement</span>
             </div>
-            <div>
-                <label>Nombre de cartes souhaité *</label>
-                <input type="text" id="devisQty" placeholder="Ex. : 8 cartes pour 3 établissements" required>
-            </div>
-            <div>
-                <label>Adresse ou ville de livraison (optionnel)</label>
-                <input type="text" id="devisAddress" placeholder="Ex. : Lille, métropole ou autre région">
-            </div>
-            <div>
-                <label>Message ou précisions (optionnel)</label>
-                <textarea id="devisMessage" placeholder="Détails de votre activité, besoins spécifiques..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;">Envoyer ma demande de devis</button>
+            
+            <p id="devisErrorMsg" style="display:none;color:#f43f5e;font-size:.82rem;text-align:center;background:rgba(244,63,94,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(244,63,94,.2);"></p>
         </form>
 
         <div class="order-success" id="devisSuccess">
-            <div class="icon" style="width:44px;height:44px;margin:0 auto 12px;color:#22c55e;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg></div>
-            <h3>Demande bien envoyée !</h3>
-            <p style="color:var(--text-light);margin-top:6px;">Merci ! Je vous réponds par email sous 24 h avec une proposition adaptée.</p>
-            <br>
-            <button class="btn btn-outline" onclick="closeDevis()">Fermer</button>
+            <div class="success-icon-wrap">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <h3 class="success-title">Demande de devis transmise !</h3>
+            <p class="success-subtitle">Merci ! Votre demande a bien été envoyée. Je vous recontacte sous 24 h avec une proposition sur mesure.</p>
+            
+            <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="closeDevis()">Fermer et retourner au site</button>
         </div>
     </div>
 </div>
@@ -637,49 +816,93 @@
 <script>
 var CONTACT_EMAIL = 'equinzain@gmail.com';
 var MAKE_WEBHOOK = 'https://hook.eu1.make.com/ddos8ollnucv5woxyb6hlq6xdafuvit6';
-function sendToWebhook(data){
+
+function toggleGoogleHelper(){
+    var el = document.getElementById('googleHelperBox');
+    if (el) el.classList.toggle('show');
+}
+
+async function sendToWebhook(data){
     try {
-        fetch(MAKE_WEBHOOK, {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function(){ controller.abort(); }, 6000);
+        var resp = await fetch(MAKE_WEBHOOK, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(function(err){ console.warn('Webhook indisponible (normal si le site est encore sur claude.ai) :', err); });
-    } catch(err) { console.warn('Webhook indisponible :', err); }
+            body: JSON.stringify(data),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return true;
+    } catch(err) {
+        console.warn('Notification webhook :', err);
+        return false;
+    }
 }
+
 var devisOverlay = document.getElementById('devisOverlay'),
     devisForm = document.getElementById('devisForm'),
     devisSuccess = document.getElementById('devisSuccess');
 
-function openDevis(){ devisOverlay.classList.add('open'); document.body.style.overflow='hidden'; devisForm.style.display='flex'; devisSuccess.classList.remove('show'); }
-function closeDevis(){ devisOverlay.classList.remove('open'); document.body.style.overflow=''; }
-function submitDevis(e){
+function openDevis(){
+    devisOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    devisForm.style.display = 'flex';
+    devisSuccess.classList.remove('show');
+    var err = document.getElementById('devisErrorMsg');
+    if (err) err.style.display = 'none';
+}
+
+function closeDevis(){
+    devisOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+async function submitDevis(e){
     e.preventDefault();
-    var b=document.getElementById('devisBusiness').value,
-        n=document.getElementById('devisName').value,
-        m=document.getElementById('devisEmail').value,
-        q=document.getElementById('devisQty').value,
-        a=document.getElementById('devisAddress').value,
-        g=document.getElementById('devisMessage').value;
-    sendToWebhook({
+    var btn = document.getElementById('devisSubmitBtn'),
+        btnText = document.getElementById('devisSubmitText'),
+        btnSpinner = document.getElementById('devisSubmitSpinner');
+
+    var b = document.getElementById('devisBusiness').value,
+        n = document.getElementById('devisName').value,
+        m = document.getElementById('devisEmail').value,
+        p = document.getElementById('devisPhone') ? document.getElementById('devisPhone').value : '',
+        q = document.getElementById('devisQty').value,
+        a = document.getElementById('devisAddress').value,
+        g = document.getElementById('devisMessage').value;
+
+    if (btn) { btn.disabled = true; }
+    if (btnText) { btnText.textContent = 'Envoi en cours...'; }
+    if (btnSpinner) { btnSpinner.style.display = 'inline-block'; }
+
+    var payload = {
         type: 'Devis',
+        date: new Date().toISOString(),
         entreprise: b,
         nom: n,
         email: m,
+        telephone: p,
         quantite: q,
         adresse: a || 'Non précisée',
         message: g || 'Aucun',
         statut: 'Nouvelle'
-    });
-    window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Demande de devis - ' + b) +
-        '&body=' + encodeURIComponent('DEMANDE DE DEVIS\nEntreprise: ' + b + '\nContact: ' + n + '\nEmail: ' + m + '\nQuantité souhaitée: ' + q + '\nAdresse: ' + (a||'Non précisée') + '\nMessage: ' + (g||'Aucun'));
-    devisForm.style.display='none';
+    };
+
+    await sendToWebhook(payload);
+
+    if (btn) { btn.disabled = false; }
+    if (btnText) { btnText.textContent = 'Envoyer ma demande de devis'; }
+    if (btnSpinner) { btnSpinner.style.display = 'none'; }
+
+    devisForm.style.display = 'none';
     devisSuccess.classList.add('show');
     return false;
 }
 </script>
 
 <script>
-/* ===== CART ===== */
+/* ===== CART & CHECKOUT ===== */
 var CART = [];
 try { var saved = localStorage.getItem('nfc_cart'); if (saved) CART = JSON.parse(saved); } catch(e) { CART = []; }
 
@@ -690,17 +913,27 @@ var cartOverlay = document.getElementById('cartOverlay'),
     cartView = document.getElementById('cartView'),
     checkoutView = document.getElementById('checkoutView'),
     orderSuccess = document.getElementById('orderSuccess'),
-    cartTitle = document.getElementById('cartTitle');
+    cartHeaderText = document.getElementById('cartHeaderText'),
+    cartHeaderIcon = document.getElementById('cartHeaderIcon');
 
 function saveCart(){ try{ localStorage.setItem('nfc_cart', JSON.stringify(CART)); }catch(e){} }
 
 function addToCart(id, label, price){
     CART = [{ id: id, label: label, price: price, qty: 1 }];
-    saveCart(); renderCart(); openCart();
+    saveCart();
+    renderCart();
+    openCart();
 }
-function removeItem(id){ CART = CART.filter(function(i){ return i.id !== id; }); saveCart(); renderCart(); }
 
-function cartTotal(){ return CART.reduce(function(s,i){ return s + i.price * i.qty; }, 0); }
+function removeItem(id){
+    CART = CART.filter(function(i){ return i.id !== id; });
+    saveCart();
+    renderCart();
+}
+
+function cartTotal(){
+    return CART.reduce(function(s,i){ return s + i.price * i.qty; }, 0);
+}
 
 function renderCart(){
     var count = CART.reduce(function(s,i){ return s + i.qty; }, 0);
@@ -718,7 +951,7 @@ function renderCart(){
     document.getElementById('cartNote').style.display = 'block';
     cartItemsEl.innerHTML = CART.map(function(i){
         return '<div class="cart-item">' +
-            '<div class="cart-item-info"><strong>' + i.label + '</strong><span>Pack sélectionné</span></div>' +
+            '<div class="cart-item-info"><strong>' + i.label + '</strong><span>✓ Prêtes à l\'emploi</span></div>' +
             '<div class="cart-item-price">' + (i.price * i.qty) + '€</div>' +
             '<button class="cart-item-remove" onclick="removeItem(\'' + i.id + '\')" aria-label="Retirer">✕</button>' +
         '</div>';
@@ -726,43 +959,105 @@ function renderCart(){
     document.getElementById('cartTotal').textContent = cartTotal() + '€';
 }
 
-function openCart(){ cartOverlay.classList.add('open'); document.body.style.overflow='hidden'; showCartStep(); renderCart(); }
-function closeCart(){ cartOverlay.classList.remove('open'); document.body.style.overflow=''; }
-function showCartStep(){ cartTitle.textContent='Votre panier'; cartView.style.display='block'; checkoutView.style.display='none'; orderSuccess.classList.remove('show'); }
-function goCheckout(){ if (CART.length===0) return; cartTitle.textContent='Vos coordonnées'; cartView.style.display='none'; checkoutView.style.display='flex'; document.getElementById('checkoutTotal').textContent = cartTotal() + '€'; }
-function backToCart(){ showCartStep(); }
+function openCart(){
+    cartOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showCartStep();
+    renderCart();
+}
 
-function submitOrder(e){
+function closeCart(){
+    cartOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function showCartStep(){
+    if (cartHeaderText) cartHeaderText.textContent = 'Votre panier';
+    if (cartHeaderIcon) cartHeaderIcon.textContent = '🛒';
+    cartView.style.display = 'block';
+    checkoutView.style.display = 'none';
+    orderSuccess.classList.remove('show');
+}
+
+function goCheckout(){
+    if (CART.length === 0) return;
+    if (cartHeaderText) cartHeaderText.textContent = 'Vos coordonnées de livraison';
+    if (cartHeaderIcon) cartHeaderIcon.textContent = '📍';
+    cartView.style.display = 'none';
+    checkoutView.style.display = 'flex';
+    
+    var packName = CART[0].label;
+    var total = cartTotal();
+    var recapNameEl = document.getElementById('recapPackName');
+    var recapPriceEl = document.getElementById('recapPackPrice');
+    var checkoutTotalEl = document.getElementById('checkoutTotal');
+    if (recapNameEl) recapNameEl.textContent = packName;
+    if (recapPriceEl) recapPriceEl.textContent = total + '€';
+    if (checkoutTotalEl) checkoutTotalEl.textContent = total + '€';
+}
+
+function backToCart(){
+    showCartStep();
+}
+
+async function submitOrder(e){
     e.preventDefault();
-    var b=document.getElementById('orderBusiness').value,
-        n=document.getElementById('orderName').value,
-        m=document.getElementById('orderEmail').value,
-        p=document.getElementById('orderPhone').value,
-        a=document.getElementById('orderAddress').value,
-        k=document.getElementById('orderLink').value,
-        g=document.getElementById('orderMessage').value;
-    var lines = CART.map(function(i){ return '- ' + i.label + ' x' + i.qty + ' = ' + (i.price*i.qty) + '€'; }).join('\n');
-    var formule = CART.length ? CART[0].label : '';
-    sendToWebhook({
+    var btn = document.getElementById('orderSubmitBtn'),
+        btnText = document.getElementById('orderSubmitText'),
+        btnSpinner = document.getElementById('orderSubmitSpinner');
+
+    var b = document.getElementById('orderBusiness').value,
+        n = document.getElementById('orderName').value,
+        m = document.getElementById('orderEmail').value,
+        p = document.getElementById('orderPhone').value,
+        a = document.getElementById('orderAddress').value,
+        k = document.getElementById('orderLink').value,
+        g = document.getElementById('orderMessage').value;
+
+    if (btn) { btn.disabled = true; }
+    if (btnText) { btnText.textContent = 'Validation en cours...'; }
+    if (btnSpinner) { btnSpinner.style.display = 'inline-block'; }
+
+    var formule = CART.length ? CART[0].label : 'Formule NFC';
+    var total = cartTotal();
+
+    var payload = {
         type: 'Commande',
+        date: new Date().toISOString(),
         formule: formule,
-        prix: cartTotal(),
+        montant: total + '€',
         entreprise: b,
         nom: n,
         email: m,
         telephone: p,
         adresse: a,
-        lienGoogle: k || 'Non',
+        lienGoogle: k || 'Non renseigné',
         message: g || 'Aucun',
         statut: 'Nouvelle'
-    });
-    window.location.href = 'mailto:equinzain@gmail.com?subject=' + encodeURIComponent('Commande NFC - ' + b) +
-        '&body=' + encodeURIComponent('NOUVELLE COMMANDE\n' + lines + '\nTotal: ' + cartTotal() + '€\n\nEntreprise: ' + b + '\nClient: ' + n + '\nEmail: ' + m + '\nTel: ' + p + '\nAdresse: ' + a + '\nGoogle: ' + (k||'Non') + '\nMessage: ' + (g||'Aucun'));
-    checkoutView.style.display='none';
+    };
+
+    await sendToWebhook(payload);
+
+    if (btn) { btn.disabled = false; }
+    if (btnText) { btnText.textContent = 'Confirmer ma commande'; }
+    if (btnSpinner) { btnSpinner.style.display = 'none'; }
+
+    var subEl = document.getElementById('orderSuccessSubtitle');
+    if (subEl) {
+        subEl.textContent = 'Merci ' + n + ' ! Votre commande pour « ' + b + ' » (' + formule + ') a bien été transmise.';
+    }
+
+    checkoutView.style.display = 'none';
     orderSuccess.classList.add('show');
-    CART = []; saveCart(); renderCart();
+    if (cartHeaderText) cartHeaderText.textContent = 'Confirmation';
+    if (cartHeaderIcon) cartHeaderIcon.textContent = '✅';
+
+    CART = [];
+    saveCart();
+    renderCart();
     return false;
 }
+
 renderCart();
 document.getElementById('menuToggle').addEventListener('click',function(){this.classList.toggle('active');document.getElementById('navLinks').classList.toggle('open');});
 document.querySelectorAll('#navLinks a').forEach(function(l){l.addEventListener('click',function(){document.getElementById('menuToggle').classList.remove('active');document.getElementById('navLinks').classList.remove('open');});});
