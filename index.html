@@ -1091,8 +1091,8 @@ async function submitDevis(e){
         email: m,
         telephone: p,
         quantite: q,
-        adresse: a || 'Non précisée',
-        message: g || 'Aucun',
+        adresse: a || '',
+        message: g || '',
         statut: 'Nouvelle'
     };
 
@@ -1233,13 +1233,14 @@ async function submitOrder(e){
         date: new Date().toISOString(),
         formule: formule,
         montant: total + '€',
+        prix: total,
         entreprise: b,
         nom: n,
         email: m,
         telephone: p,
         adresse: a,
-        lienGoogle: k || 'Non renseigné',
-        message: g || 'Aucun',
+        lienGoogle: k || '',
+        message: g || '',
         statut: 'Nouvelle'
     };
 
