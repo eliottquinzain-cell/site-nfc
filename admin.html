@@ -242,11 +242,11 @@
     </main>
 
     <script>
+        var API_ENDPOINT = '/.netlify/functions/api';
         var BASE_ID = 'apptiTaUP2cOr59kx';
         var TABLE_COMMANDES = 'tblaN74JcPcUQY0aJ';
         var TABLE_DEVIS = 'tbl8jxUNNwo4oA2eq';
         var TABLE_SAV = 'tblpSHnWapHObQOOU';
-        var ENC_TOKEN = '41534750016b71444077754263610251401c0b510405010d095355515507035605560152050a00075006560104500751020400570100045509025007535350500300045054500b560450035703010a065706';
 
         var CURRENT_TAB = 'orders';
         var ORDERS = [];
@@ -255,32 +255,19 @@
         var POLL_INTERVAL = 15000;
         var pollTimer = null;
 
-        function unXorHex(hexStr, key) {
-            try {
-                var res = '';
-                for (var i = 0; i < hexStr.length; i += 2) {
-                    var c = parseInt(hexStr.substr(i, 2), 16);
-                    res += String.fromCharCode(c ^ key.charCodeAt((i / 2) % key.length));
-                }
-                return res;
-            } catch(e) {
-                return null;
-            }
-        }
-
-        function getToken() {
-            var hashMatch = window.location.hash.match(/token=([^&]+)/);
+        function getAdminSecret() {
+            var hashMatch = window.location.hash.match(/pass=([^&]+)/);
             if (hashMatch && hashMatch[1]) {
-                localStorage.setItem('nfc_admin_token', hashMatch[1]);
+                localStorage.setItem('nfc_admin_pass', hashMatch[1]);
                 window.location.hash = '';
                 return hashMatch[1];
             }
-            return localStorage.getItem('nfc_admin_token') || '';
+            return localStorage.getItem('nfc_admin_pass') || localStorage.getItem('nfc_admin_token') || '';
         }
 
         async function verifyAndLoad() {
-            var token = getToken();
-            if (!token) {
+            var pass = getAdminSecret();
+            if (!pass) {
                 document.getElementById('authOverlay').style.display = 'flex';
                 return;
             }
@@ -292,25 +279,32 @@
         async function loginWithToken() {
             var input = document.getElementById('tokenInput').value.trim();
             var err = document.getElementById('authError');
+            var btn = document.querySelector('#authOverlay button');
             if (!input) return;
 
-            var tokenToUse = input;
-            if (input === '1234' || input === '0000' || input === 'nfc') {
-                tokenToUse = unXorHex(ENC_TOKEN, '1234');
-            } else if (input.length <= 10 && !input.startsWith('pat')) {
-                tokenToUse = unXorHex(ENC_TOKEN, input);
-            }
-            tokenToUse = (tokenToUse || '').replace(/^Bearer\s+/i, '').trim();
+            if (btn) btn.textContent = 'Vérification sécurisée...';
+            err.style.display = 'none';
 
             try {
-                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?maxRecords=1', {
-                    headers: { 'Authorization': 'Bearer ' + tokenToUse }
-                });
-                if (!res.ok) {
+                if (input.startsWith('pat')) {
+                    var testRes = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?maxRecords=1', {
+                        headers: { 'Authorization': 'Bearer ' + input }
+                    });
+                    if (!testRes.ok) throw new Error('Clé Airtable invalide');
+                    localStorage.setItem('nfc_admin_pass', input);
+                } else {
+                    var res = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'admin-login', password: input })
+                    });
                     var data = await res.json().catch(function(){ return {}; });
-                    throw new Error((data.error && data.error.message) || 'Code PIN ou clé invalide');
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || 'Code administrateur incorrect');
+                    }
+                    localStorage.setItem('nfc_admin_pass', input);
                 }
-                localStorage.setItem('nfc_admin_token', tokenToUse);
+
                 document.getElementById('authOverlay').style.display = 'none';
                 err.style.display = 'none';
                 await fetchAllData();
@@ -318,6 +312,8 @@
             } catch(e) {
                 err.textContent = 'Erreur : ' + (e.message || 'Code PIN ou clé invalide');
                 err.style.display = 'block';
+            } finally {
+                if (btn) btn.textContent = 'Déverrouiller le tableau de bord';
             }
         }
 
@@ -327,6 +323,7 @@
 
         function logout() {
             if (confirm('Voulez-vous vous déconnecter du tableau de bord ?')) {
+                localStorage.removeItem('nfc_admin_pass');
                 localStorage.removeItem('nfc_admin_token');
                 clearInterval(pollTimer);
                 location.reload();
@@ -347,36 +344,54 @@
         }
 
         async function fetchAllData() {
-            var token = getToken();
-            if (!token) return;
+            var secret = getAdminSecret();
+            if (!secret) return;
 
             var refreshBtn = document.getElementById('refreshBtn');
             if (refreshBtn) refreshBtn.classList.add('spinning');
 
             try {
-                var [resCmd, resDev, resSav] = await Promise.all([
-                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    }),
-                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_DEVIS + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    }),
-                    fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_SAV + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
-                        headers: { 'Authorization': 'Bearer ' + token }
-                    })
-                ]);
+                if (secret.startsWith('pat')) {
+                    var [resCmd, resDev, resSav] = await Promise.all([
+                        fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_COMMANDES + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                            headers: { 'Authorization': 'Bearer ' + secret }
+                        }),
+                        fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_DEVIS + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                            headers: { 'Authorization': 'Bearer ' + secret }
+                        }),
+                        fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + TABLE_SAV + '?sort%5B0%5D%5Bfield%5D=Date&sort%5B0%5D%5Bdirection%5D=desc', {
+                            headers: { 'Authorization': 'Bearer ' + secret }
+                        })
+                    ]);
 
-                if (resCmd.ok) {
-                    var dataCmd = await resCmd.json();
-                    ORDERS = (dataCmd.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
-                }
-                if (resDev.ok) {
-                    var dataDev = await resDev.json();
-                    DEVIS = (dataDev.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
-                }
-                if (resSav && resSav.ok) {
-                    var dataSav = await resSav.json();
-                    SAV_TICKETS = (dataSav.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                    if (resCmd.ok) {
+                        var dataCmd = await resCmd.json();
+                        ORDERS = (dataCmd.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                    }
+                    if (resDev.ok) {
+                        var dataDev = await resDev.json();
+                        DEVIS = (dataDev.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                    }
+                    if (resSav && resSav.ok) {
+                        var dataSav = await resSav.json();
+                        SAV_TICKETS = (dataSav.records || []).filter(function(r){ return r.fields && r.fields.Entreprise; });
+                    }
+                } else {
+                    var res = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'admin-fetch-all', adminPass: secret })
+                    });
+
+                    if (res.ok) {
+                        var data = await res.json();
+                        ORDERS = data.orders || [];
+                        DEVIS = data.devis || [];
+                        SAV_TICKETS = data.sav || [];
+                    } else if (res.status === 401) {
+                        localStorage.removeItem('nfc_admin_pass');
+                        document.getElementById('authOverlay').style.display = 'flex';
+                    }
                 }
 
                 updateKPIs();
@@ -457,27 +472,45 @@
         }
 
         async function updateStatus(tableId, recordId, newStatus) {
-            var token = getToken();
-            if (!token) return;
+            var secret = getAdminSecret();
+            if (!secret) return;
 
             try {
-                var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + tableId + '/' + recordId, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: {
-                            'Statut': [newStatus]
-                        }
-                    })
-                });
-
-                if (res.ok) {
-                    await fetchAllData();
+                if (secret.startsWith('pat')) {
+                    var res = await fetch('https://api.airtable.com/v0/' + BASE_ID + '/' + tableId + '/' + recordId, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': 'Bearer ' + secret,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            fields: {
+                                'Statut': [newStatus]
+                            }
+                        })
+                    });
+                    if (res.ok) {
+                        await fetchAllData();
+                    } else {
+                        alert('Erreur lors de la mise à jour du statut.');
+                    }
                 } else {
-                    alert('Erreur lors de la mise à jour du statut.');
+                    var res = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'admin-update-status',
+                            adminPass: secret,
+                            table: tableId,
+                            recordId: recordId,
+                            status: newStatus
+                        })
+                    });
+                    if (res.ok) {
+                        await fetchAllData();
+                    } else {
+                        alert('Erreur lors de la mise à jour du statut.');
+                    }
                 }
             } catch(err) {
                 alert('Erreur réseau.');
