@@ -403,32 +403,7 @@
 </head>
 <body>
 
-    <!-- 1. MULTI-ADMIN SECURE LOGIN MODAL -->
-    <div class="modal-overlay" id="authOverlay">
-        <div class="modal-card" style="max-width:440px;">
-            <div style="font-size:2rem;margin-bottom:10px;">🔐</div>
-            <h2>Console d'Administration</h2>
-            <p class="sub">Authentification requise &bull; Espace sécurisé</p>
 
-            <form onsubmit="return handleAdminLogin(event)">
-                <div class="form-group">
-                    <label for="adminUsername">Identifiant Administrateur</label>
-                    <input type="text" id="adminUsername" class="form-input" placeholder="Votre identifiant" required autocomplete="username">
-                </div>
-
-                <div class="form-group">
-                    <label for="adminPassword">Mot de passe sécurisé</label>
-                    <input type="password" id="adminPassword" class="form-input" placeholder="Mot de passe confidentiel" required autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="btn-submit" id="authSubmitBtn">
-                    Connexion sécurisée ➔
-                </button>
-
-                <p id="authError" style="color:var(--danger);font-size:.8rem;text-align:center;margin-top:12px;display:none;"></p>
-            </form>
-        </div>
-    </div>
 
     <!-- 2. ORDER CUSTOMIZATION & STAGE MODAL -->
     <div class="modal-overlay" id="customModal" style="display:none;" onclick="if(event.target===this)closeCustomModal()">
@@ -629,78 +604,49 @@
         }
 
         async function verifyAndLoad() {
-            var sess = getAdminSession();
-            if (!sess || !sess.token) {
-                document.getElementById('authOverlay').style.display = 'flex';
-                return;
-            }
+            try {
+                var res = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
 
-            CURRENT_ADMIN = sess.user;
-            updateAdminHeaderUI(sess.user);
-            document.getElementById('authOverlay').style.display = 'none';
-            await fetchAllData();
-            startPolling();
+                if (!res.ok) {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                var data = await res.json();
+                if (!data.authenticated || !data.user || data.user.role !== 'admin') {
+                    window.location.href = '/login.html?error=forbidden&redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                CURRENT_ADMIN = data.user;
+                updateAdminHeaderUI(data.user);
+                await fetchAllData();
+                startPolling();
+            } catch(e) {
+                console.error('Erreur vérification session:', e);
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            }
         }
 
         function updateAdminHeaderUI(user) {
             if (!user) return;
             document.getElementById('adminNameLabel').textContent = user.name || user.username;
-            document.getElementById('adminRoleLabel').textContent = user.role || 'Admin';
-            document.getElementById('adminBadgeIcon').textContent = (user.badge ? user.badge.split(' ')[0] : '👤');
+            document.getElementById('adminRoleLabel').textContent = user.badge || 'Admin';
+            document.getElementById('adminBadgeIcon').textContent = (user.badge ? user.badge.split(' ')[0] : '👑');
         }
 
-        async function handleAdminLogin(e) {
-            if (e) e.preventDefault();
-            var u = document.getElementById('adminUsername').value.trim();
-            var p = document.getElementById('adminPassword').value.trim();
-            var err = document.getElementById('authError');
-            var btn = document.getElementById('authSubmitBtn');
-
-            if (!u || !p) return false;
-            btn.disabled = true;
-            btn.textContent = 'Vérification sécurisée...';
-            err.style.display = 'none';
-
-            try {
-                var res = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'admin-login', username: u, password: p })
-                });
-
-                var data = await res.json().catch(function(){ return {}; });
-                if (!res.ok || !data.success) {
-                    throw new Error(data.error || 'Identifiant ou mot de passe incorrect');
-                }
-
-                localStorage.setItem('nfc_admin_session', JSON.stringify({
-                    token: data.token,
-                    user: data.user
-                }));
-
-                CURRENT_ADMIN = data.user;
-                updateAdminHeaderUI(data.user);
-                document.getElementById('authOverlay').style.display = 'none';
-                await fetchAllData();
-                startPolling();
-
-            } catch(error) {
-                err.textContent = error.message || 'Identifiants invalides';
-                err.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Connexion sécurisée ➔';
-            }
-            return false;
-        }
-
-        function logout() {
+        async function logout() {
             if (confirm('Voulez-vous vous déconnecter de la console administrateur ?')) {
+                try {
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                } catch(e){}
                 localStorage.removeItem('nfc_admin_session');
-                localStorage.removeItem('nfc_admin_pass');
-                localStorage.removeItem('nfc_admin_token');
                 clearInterval(pollTimer);
-                location.reload();
+                window.location.href = '/login.html';
             }
         }
 
@@ -718,17 +664,14 @@
         }
 
         async function fetchAllData() {
-            var sess = getAdminSession();
-            if (!sess || !sess.token) return;
-
             var refreshBtn = document.getElementById('refreshBtn');
             if (refreshBtn) refreshBtn.classList.add('spinning');
 
             try {
-                var res = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'admin-fetch-all', adminToken: sess.token })
+                var res = await fetch('/api/admin/orders', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
                 });
 
                 if (res.ok) {
@@ -740,9 +683,9 @@
                         CURRENT_ADMIN = data.currentUser;
                         updateAdminHeaderUI(data.currentUser);
                     }
-                } else if (res.status === 401) {
-                    localStorage.removeItem('nfc_admin_session');
-                    document.getElementById('authOverlay').style.display = 'flex';
+                } else if (res.status === 401 || res.status === 403) {
+                    window.location.href = '/login.html?error=expired&redirect=' + encodeURIComponent(window.location.pathname);
+                    return;
                 }
 
                 updateKPIs();
@@ -751,7 +694,8 @@
                 console.error('Erreur chargement données:', e);
             } finally {
                 if (refreshBtn) refreshBtn.classList.remove('spinning');
-                document.getElementById('loadingIndicator').style.display = 'none';
+                var loader = document.getElementById('loadingIndicator');
+                if (loader) loader.style.display = 'none';
             }
         }
 
