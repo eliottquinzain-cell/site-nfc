@@ -61,6 +61,14 @@ module.exports = async (req, res) => {
 
     try {
         // ==========================================
+        // ROUTE: GET/POST /api/health or action='health'
+        // ==========================================
+        if (pathname === '/api/health' || action === 'health') {
+            const health = await db.getHealthStatus();
+            return res.status(200).json({ success: true, ...health });
+        }
+
+        // ==========================================
         // ROUTE: POST /api/auth/login or action='admin-login' / 'client-login'
         // ==========================================
         if (pathname === '/api/auth/login' || action === 'admin-login' || action === 'client-login' || (pathname === '/api' && action === 'login')) {
