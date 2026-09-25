@@ -7,14 +7,26 @@ try {
     Pool = null;
 }
 
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+function getDatabaseUrl() {
+    return process.env.DATABASE_URL || 
+           process.env.POSTGRES_URL || 
+           process.env.POSTGRES_DATABASE_URL || 
+           process.env.POSTGRES_URL_NON_POOLING || 
+           process.env.POSTGRES_PRISMA_URL;
+}
 
 let pool = null;
-if (DATABASE_URL && Pool) {
-    pool = new Pool({
-        connectionString: DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
-    });
+function getPool() {
+    if (!pool && Pool) {
+        const dbUrl = getDatabaseUrl();
+        if (dbUrl) {
+            pool = new Pool({
+                connectionString: dbUrl,
+                ssl: { rejectUnauthorized: false }
+            });
+        }
+    }
+    return pool;
 }
 
 // In-memory fallback cache when DATABASE_URL is not yet provisioned
@@ -129,9 +141,10 @@ async function initDb() {
     }
 
     // If PostgreSQL pool is available, create schema & seed
-    if (pool) {
+    const activePool = getPool();
+    if (activePool) {
         try {
-            await pool.query(`
+            await activePool.query(`
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
                     username VARCHAR(100) UNIQUE,
@@ -181,28 +194,57 @@ async function initDb() {
 
             // Seed admins if not already present
             for (const admin of DEFAULT_ADMINS) {
-                const existing = await pool.query(
+                const existing = await activePool.query(
                     'SELECT id FROM users WHERE username = $1 OR email = $2',
                     [admin.username, admin.email]
                 );
                 if (existing.rows.length === 0) {
                     const hash = await hashPassword(admin.plainPassword);
-                    await pool.query(
+                    await activePool.query(
                         'INSERT INTO users (username, email, password_hash, role, name, badge) VALUES ($1, $2, $3, $4, $5, $6)',
                         [admin.username, admin.email, hash, admin.role, admin.name, admin.badge]
                     );
                 }
             }
 
-            console.log('PostgreSQL Database schema initialized successfully');
+            // Seed initial orders if empty
+            const orderCount = await activePool.query('SELECT count(*) FROM orders');
+            if (parseInt(orderCount.rows[0].count, 10) === 0) {
+                for (const o of memoryStore.orders) {
+                    await activePool.query(
+                        `INSERT INTO orders (
+                            code_client, entreprise, nom_client, telephone, email, 
+                            adresse, lien_google, formule, prix, statut, etape, 
+                            notes_configuration, date_livraison_prevue, reception_client, created_at
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+                        [
+                            o.code_client, o.entreprise, o.nom_client, o.telephone, o.email,
+                            o.adresse, o.lien_google, o.formule, o.prix, o.statut, o.etape,
+                            o.notes_configuration, o.date_livraison_prevue, o.reception_client, o.created_at
+                        ]
+                    );
+                }
+            }
+
+            // Seed demo client user if not exists
+            const clientExists = await activePool.query("SELECT id FROM users WHERE email = 'alexandre.dupont@test-flandre.fr'");
+            if (clientExists.rows.length === 0) {
+                const clientHash = await hashPassword('client123');
+                await activePool.query(
+                    "INSERT INTO users (username, email, password_hash, role, name, badge) VALUES ($1, $2, $3, 'client', $4, '👤 Client')",
+                    ['alexandre.dupont@test-flandre.fr', 'alexandre.dupont@test-flandre.fr', clientHash, 'Alexandre Dupont']
+                );
+            }
+
+            console.log('PostgreSQL Database schema initialized and seeded successfully');
+            dbInitialized = true;
         } catch (err) {
             console.error('PostgreSQL connection/init error, falling back to memory store:', err.message);
         }
     } else {
         console.log('No DATABASE_URL configured. Running with in-memory store.');
+        dbInitialized = true;
     }
-
-    dbInitialized = true;
 }
 
 /**
@@ -465,6 +507,43 @@ async function getAllSavTickets() {
     return memoryStore.sav_tickets;
 }
 
+/**
+ * Health and connectivity status
+ */
+async function getHealthStatus() {
+    await initDb();
+    const activePool = getPool();
+    if (activePool) {
+        try {
+            const dbCheck = await activePool.query('SELECT current_database(), current_user, version()');
+            const userCount = await activePool.query('SELECT count(*) FROM users');
+            const orderCount = await activePool.query('SELECT count(*) FROM orders');
+            return {
+                status: 'ok',
+                storage: 'postgresql',
+                database: dbCheck.rows[0].current_database,
+                user: dbCheck.rows[0].current_user,
+                usersCount: parseInt(userCount.rows[0].count, 10),
+                ordersCount: parseInt(orderCount.rows[0].count, 10),
+                connected: true
+            };
+        } catch (e) {
+            return {
+                status: 'error',
+                storage: 'postgresql-fallback-memory',
+                error: e.message,
+                connected: false
+            };
+        }
+    }
+    return {
+        status: 'ok',
+        storage: 'memory',
+        note: 'No DATABASE_URL configured yet',
+        connected: false
+    };
+}
+
 module.exports = {
     initDb,
     findUserByUsernameOrEmail,
@@ -474,5 +553,6 @@ module.exports = {
     updateOrder,
     confirmOrderReception,
     createSavTicket,
-    getAllSavTickets
+    getAllSavTickets,
+    getHealthStatus
 };
