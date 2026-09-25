@@ -137,6 +137,10 @@ module.exports = async (req, res) => {
         // ==========================================
         if (pathname === '/api/auth/logout' || action === 'logout') {
             res.setHeader('Set-Cookie', createClearSessionCookie());
+            if (req.method === 'GET') {
+                res.writeHead(302, { Location: '/login.html?logout=true' });
+                return res.end();
+            }
             return res.status(200).json({ success: true, redirect: '/login.html' });
         }
 
