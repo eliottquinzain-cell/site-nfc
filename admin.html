@@ -427,6 +427,24 @@
                         <option value="5. En cours de livraison">5. 🚚 En cours de livraison</option>
                         <option value="6. Livrée & Confirmée">6. ✅ Livrée & Confirmée</option>
                     </select>
+                <div class="form-group">
+                    <label for="editTypeCommerce">Type d'établissement</label>
+                    <select id="editTypeCommerce" class="form-select">
+                        <option value="restaurant">🍽️ Restaurant, Café ou Bar</option>
+                        <option value="coiffeur">💇 Salon de coiffure & Beauté</option>
+                        <option value="commerce">🛍️ Commerce de proximité & Boutique</option>
+                        <option value="autre">💼 Autre activité / Artisan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTypeAction">Usage de la carte NFC</label>
+                    <select id="editTypeAction" class="form-select">
+                        <option value="avis_google">⭐ Avis Google Maps direct</option>
+                        <option value="menu_restaurant">🍽️ Menu en ligne / Carte numérique</option>
+                        <option value="double_action">🚀 Double Action (Menu + Avis)</option>
+                        <option value="rdv">📅 Rendez-vous en ligne</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -435,6 +453,19 @@
                         <input type="url" id="editLien" class="form-input" placeholder="https://g.page/r/...">
                         <button type="button" class="btn-action" onclick="testModalLink()" title="Tester le lien dans un nouvel onglet">Tester ↗</button>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editLienMenu">Lien du Menu en ligne (Restaurants)</label>
+                    <input type="url" id="editLienMenu" class="form-input" placeholder="https://... (Lien PDF, site, Linktree, Instagram)">
+                </div>
+
+                <div class="form-group">
+                    <label for="editHasSubscription">Statut de l'abonnement Espace Client</label>
+                    <select id="editHasSubscription" class="form-select">
+                        <option value="true">⚡ Abonné Pro (10 €/mois - Espace Client actif)</option>
+                        <option value="false">📦 Carte seule (Sans abonnement - Suivi simple)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -810,7 +841,11 @@
             document.getElementById('modalOrderRefSub').textContent = 'Client : ' + (f['Nom et prénom'] || 'Inconnu') + ' &bull; Réf: ' + (f['Code Client'] || recordId);
 
             document.getElementById('editEtape').value = f['Etape commande'] || '1. Prise en charge';
+            document.getElementById('editTypeCommerce').value = f['Type commerce'] || 'commerce';
+            document.getElementById('editTypeAction').value = f['Type action'] || 'avis_google';
             document.getElementById('editLien').value = f.Lien || '';
+            document.getElementById('editLienMenu').value = f['Lien menu'] || '';
+            document.getElementById('editHasSubscription').value = f['Abonnement statut'] === true ? 'true' : 'false';
             document.getElementById('editNotes').value = f['Notes atelier'] || '';
             document.getElementById('editDateLivraison').value = f['Date livraison prevue'] || '';
 
@@ -841,7 +876,11 @@
 
             var recordId = document.getElementById('editOrderId').value;
             var etape = document.getElementById('editEtape').value;
+            var typeCommerce = document.getElementById('editTypeCommerce').value;
+            var typeAction = document.getElementById('editTypeAction').value;
             var lien = document.getElementById('editLien').value.trim();
+            var lienMenu = document.getElementById('editLienMenu').value.trim();
+            var hasSubscription = document.getElementById('editHasSubscription').value === 'true';
             var notes = document.getElementById('editNotes').value.trim();
             var dateLivraison = document.getElementById('editDateLivraison').value.trim();
             var statut = document.getElementById('editStatut').value;
@@ -860,7 +899,11 @@
                         recordId: recordId,
                         fields: {
                             etape: etape,
+                            typeCommerce: typeCommerce,
+                            typeAction: typeAction,
                             lienGoogle: lien,
+                            lienMenu: lienMenu,
+                            hasSubscription: hasSubscription,
                             notes: notes,
                             dateLivraison: dateLivraison,
                             statut: statut
@@ -977,10 +1020,29 @@
                         '</div>';
                     }).join('');
 
+                    var typeCommerce = f['Type commerce'] || 'commerce';
+                    var typeAction = f['Type action'] || 'avis_google';
+                    var hasSub = f['Abonnement statut'] === true;
+                    var lienMenu = f['Lien menu'] || '';
+
+                    var typeBadge = '<span style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">🛍️ Commerce</span>';
+                    if (typeCommerce === 'restaurant') {
+                        typeBadge = '<span style="background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">🍽️ Restaurant</span>';
+                    } else if (typeCommerce === 'coiffeur') {
+                        typeBadge = '<span style="background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">💇 Coiffeur</span>';
+                    }
+
+                    var subBadge = hasSub
+                        ? '<span style="background:rgba(234,179,8,.15);color:#facc15;border:1px solid rgba(234,179,8,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">⚡ Abonné Pro (10€/m)</span>'
+                        : '<span style="background:rgba(148,163,184,.15);color:#94a3b8;border:1px solid rgba(148,163,184,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">📦 Sans abonnement (Suivi seul)</span>';
+
                     return '<div class="order-card ' + (status === 'Nouvelle' ? 'new-order' : '') + '">' +
                         '<div class="order-card-header">' +
                             '<div>' +
-                                '<div class="order-company">🏪 ' + escapeHtml(f.Entreprise) + ' ' + 
+                                '<div class="order-company" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+                                    '<span>🏪 ' + escapeHtml(f.Entreprise) + '</span> ' +
+                                    typeBadge + ' ' +
+                                    subBadge + ' ' +
                                     (isConfirmed ? '<span style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);padding:2px 8px;border-radius:50px;font-size:.7rem;font-weight:700;">✓ Réception confirmée par le client</span>' : '') +
                                 '</div>' +
                                 '<div class="order-meta">' +
@@ -1008,10 +1070,11 @@
                             '<div class="detail-item"><span class="detail-label">Client</span><span class="detail-value">👤 ' + escapeHtml(f['Nom et prénom'] || 'Non renseigné') + '</span></div>' +
                             '<div class="detail-item"><span class="detail-label">Téléphone</span><span class="detail-value"><a href="tel:' + escapeHtml(f.Telephone) + '">📞 ' + escapeHtml(f.Telephone || 'N/A') + '</a></span></div>' +
                             '<div class="detail-item"><span class="detail-label">Email pro</span><span class="detail-value"><a href="mailto:' + escapeHtml(f.Email) + '">✉️ ' + escapeHtml(f.Email || 'N/A') + '</a></span></div>' +
-                            '<div class="detail-item"><span class="detail-label">Accès Espace Client</span><span class="detail-value">Réf: <strong>' + escapeHtml(f['Code Client'] || '-') + '</strong> &bull; MDP: <strong>' + escapeHtml(f['Mot de passe'] || '-') + '</strong></span></div>' +
+                            '<div class="detail-item"><span class="detail-label">Accès Espace Client</span><span class="detail-value">Réf: <strong>' + escapeHtml(f['Code Client'] || '-') + '</strong> ' + (hasSub ? '&bull; MDP: <strong>' + escapeHtml(f['Mot de passe'] || '-') + '</strong> <span style="color:#4ade80;">(Pro actif)</span>' : '<span style="color:#f59e0b;">(Sans abonnement &bull; Espace Pro fermé)</span>') + '</span></div>' +
                             '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Adresse de livraison</span><span class="detail-value">📍 ' + escapeHtml(f.Adresse || 'N/A') + ' &bull; <a href="' + mapsUrl + '" target="_blank">Google Maps ↗</a></span></div>' +
-                            '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Fiche Google Avis programmée</span><span class="detail-value">' + 
-                                (f.Lien ? '<a href="' + escapeHtml(f.Lien) + '" target="_blank">🔗 ' + escapeHtml(f.Lien) + ' ↗ (Tester)</a>' : '<span style="color:#f59e0b;">⚠️ Non renseigné &bull; À configurer avant livraison</span>') +
+                            '<div class="detail-item" style="grid-column:1/-1;"><span class="detail-label">Redirection NFC programmée</span><span class="detail-value">' + 
+                                (f.Lien ? '<a href="' + escapeHtml(f.Lien) + '" target="_blank">🔗 Avis Google : ' + escapeHtml(f.Lien) + ' ↗ (Tester)</a>' : '<span style="color:#94a3b8;">Aucun lien Google</span>') +
+                                (lienMenu ? '<br><a href="' + escapeHtml(lienMenu) + '" target="_blank" style="color:#fb923c;font-weight:600;">📋 Menu en ligne : ' + escapeHtml(lienMenu) + ' ↗ (Ouvrir le menu)</a>' : '') +
                             '</span></div>' +
                         '</div>' +
 
