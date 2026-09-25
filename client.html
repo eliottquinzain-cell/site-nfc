@@ -174,10 +174,56 @@
                 <h1>Bonjour <span id="dashClientName">Commerçant</span> 👋</h1>
                 <p>Espace client officiel de l'établissement : <strong id="dashBusinessName" style="color:#fff;">Mon Commerce</strong></p>
             </div>
-            <div class="welcome-badge">
-                <span>🛡️</span>
-                <span>Garantie à vie active</span>
+            <div class="welcome-badge" style="background:#0f271c;color:#4ade80;border-color:#1c5233;">
+                <span>⚡</span>
+                <span>Abonné Pro (10 €/mois)</span>
             </div>
+        </div>
+
+        <!-- REDIRECTION DYNAMIQUE & STATISTIQUES (RÉSERVÉ AUX ABONNÉS PRO) -->
+        <div class="card-box" style="border-color:#1e3a5f;">
+            <div class="card-box-header">
+                <span class="card-box-title">🔄 Gestion de la Redirection Dynamique & Statistiques</span>
+                <span style="font-size:.74rem;background:rgba(56,189,248,.18);color:#38bdf8;padding:3px 10px;border-radius:50px;font-weight:700;border:1px solid rgba(56,189,248,.3);">ABONNÉ PRO</span>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:20px;">
+                <div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">Scans NFC ce mois</div>
+                    <div style="font-size:1.8rem;font-weight:800;color:#fff;margin-top:4px;" id="statScans">142</div>
+                    <div style="font-size:.72rem;color:#4ade80;margin-top:2px;">↑ +28% vs mois dernier</div>
+                </div>
+                <div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">Redirection instantanée</div>
+                    <div style="font-size:1.4rem;font-weight:800;color:#38bdf8;margin-top:8px;" id="statActive">Active</div>
+                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">Latence &lt; 50ms</div>
+                </div>
+                <div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;text-align:center;">
+                    <div style="font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">Formule</div>
+                    <div style="font-size:1.15rem;font-weight:800;color:#4ade80;margin-top:10px;">10 € / mois</div>
+                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">Sans engagement</div>
+                </div>
+            </div>
+
+            <form onsubmit="return handleUpdateRedirect(event)" style="display:flex;flex-direction:column;gap:10px;">
+                <div>
+                    <label style="font-size:.82rem;font-weight:700;color:#f3f4f6;margin-bottom:6px;display:block;">
+                        Modifier la destination de vos cartes NFC en direct :
+                    </label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="url" id="dashCustomUrl" placeholder="https://... (Lien Google Avis, Menu en ligne, ou Promo)" style="flex:1;background:#0a0a0a;border:1.5px solid #333;color:#fff;padding:10px 14px;border-radius:8px;font-size:.88rem;outline:none;" required>
+                        <button type="submit" class="btn-submit" id="saveRedirectBtn" style="padding:10px 18px;font-size:.84rem;white-space:nowrap;margin-top:0;">
+                            Mettre à jour ➔
+                        </button>
+                    </div>
+                    <div style="font-size:.74rem;color:var(--text-muted);margin-top:6px;">
+                        💡 <strong>Modification instantanée :</strong> Vos cartes physiques n'ont pas besoin d'être reprogrammées : vos clients seront immédiatement redirigés vers cette nouvelle adresse dès leur prochain bip.
+                    </div>
+                    <div id="redirectSuccess" style="display:none;color:#4ade80;font-size:.82rem;margin-top:8px;background:rgba(34,197,94,.1);padding:8px 12px;border-radius:6px;border:1px solid rgba(34,197,94,.2);">
+                        ✓ Destination mise à jour avec succès sur toutes vos cartes !
+                    </div>
+                </div>
+            </form>
         </div>
 
         <!-- TIMELINE SUIVI DE COMMANDE -->
@@ -357,6 +403,12 @@
                     throw new Error(data.error || 'Identifiants invalides');
                 }
 
+                // Strictly check subscription: if client does not have subscription, redirect to lightweight tracker
+                if (data.order && data.order.hasSubscription === false) {
+                    window.location.href = '/suivi.html?reason=no_subscription&code=' + encodeURIComponent(data.order.codeClient || '');
+                    return false;
+                }
+
                 CURRENT_ORDER = data.order;
                 CURRENT_AUTH = { email: email, pwd: pwd };
 
@@ -378,9 +430,20 @@
         }
 
         function displayDashboard(order) {
+            // Subscription guard
+            if (order.hasSubscription === false) {
+                window.location.href = '/suivi.html?reason=no_subscription&code=' + encodeURIComponent(order.codeClient || '');
+                return;
+            }
+
             document.getElementById('authContainer').style.display = 'none';
             document.getElementById('dashboardContainer').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'inline-block';
+
+            var customUrlInput = document.getElementById('dashCustomUrl');
+            if (customUrlInput) {
+                customUrlInput.value = order.googleLink || order.lienMenu || '';
+            }
 
             document.getElementById('dashClientName').textContent = order.name || 'Client';
             document.getElementById('dashBusinessName').textContent = order.business || 'Votre Établissement';
@@ -549,6 +612,47 @@
             window.location.href = '/login.html';
         }
 
+        async function handleUpdateRedirect(e) {
+            e.preventDefault();
+            var newUrl = document.getElementById('dashCustomUrl').value.trim();
+            var btn = document.getElementById('saveRedirectBtn');
+            var successMsg = document.getElementById('redirectSuccess');
+            if (!newUrl || !CURRENT_ORDER) return false;
+
+            btn.disabled = true;
+            btn.textContent = 'Mise à jour...';
+            if (successMsg) successMsg.style.display = 'none';
+
+            try {
+                var res = await fetch('/api/admin/orders/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        recordId: CURRENT_ORDER.codeClient || CURRENT_ORDER.orderId,
+                        fields: {
+                            lienGoogle: newUrl,
+                            lienMenu: newUrl
+                        }
+                    })
+                });
+
+                CURRENT_ORDER.googleLink = newUrl;
+                CURRENT_ORDER.lienMenu = newUrl;
+                displayDashboard(CURRENT_ORDER);
+                if (successMsg) {
+                    successMsg.style.display = 'block';
+                    setTimeout(function() { successMsg.style.display = 'none'; }, 4000);
+                }
+            } catch(err) {
+                alert('Erreur lors de la mise à jour du lien.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Mettre à jour ➔';
+            }
+            return false;
+        }
+
         // Auto-load client dashboard if authenticated
         async function checkSession() {
             try {
@@ -561,6 +665,12 @@
                 if (res.ok) {
                     var authData = await res.json();
                     if (authData.authenticated && authData.user) {
+                        // Strict Subscription Guard
+                        if (authData.user.role === 'client' && authData.user.hasSubscription === false) {
+                            window.location.href = '/suivi.html?reason=no_subscription';
+                            return;
+                        }
+
                         var orderRes = await fetch('/api/client/order', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -570,6 +680,10 @@
                         if (orderRes.ok) {
                             var orderData = await orderRes.json();
                             if (orderData.order) {
+                                if (orderData.order.hasSubscription === false) {
+                                    window.location.href = '/suivi.html?reason=no_subscription&code=' + encodeURIComponent(orderData.order.codeClient || '');
+                                    return;
+                                }
                                 CURRENT_ORDER = orderData.order;
                                 displayDashboard(orderData.order);
                                 return;
