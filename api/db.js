@@ -521,6 +521,39 @@ async function confirmOrderReception(orderId) {
 }
 
 /**
+ * Delete an order by ID or code_client (Admin only)
+ */
+async function deleteOrder(orderId) {
+    await initDb();
+    const activePool = getPool();
+    const idTarget = String(orderId);
+    const numId = parseInt(orderId, 10);
+
+    let deletedOrder = null;
+
+    if (activePool) {
+        try {
+            const res = await activePool.query(
+                'DELETE FROM orders WHERE (id::text = $1 OR code_client = $1) RETURNING *',
+                [idTarget]
+            );
+            if (res.rows.length > 0) {
+                deletedOrder = res.rows[0];
+            }
+        } catch (e) {
+            console.error('Postgres error in deleteOrder:', e.message);
+        }
+    }
+
+    const idx = memoryStore.orders.findIndex(o => o.id === numId || o.code_client === idTarget);
+    if (idx !== -1) {
+        deletedOrder = memoryStore.orders.splice(idx, 1)[0];
+    }
+
+    return deletedOrder;
+}
+
+/**
  * Create a SAV ticket
  */
 async function createSavTicket(ticket) {
@@ -809,6 +842,7 @@ module.exports = {
     getAllOrders,
     findOrderForClient,
     updateOrder,
+    deleteOrder,
     createOrder,
     findPublicTracking,
     confirmOrderReception,
