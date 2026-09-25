@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Sécurisée - TapTapNFC</title>
+    <style>
+        :root {
+            --bg-page: #080808;
+            --bg-card: #121212;
+            --border: #222222;
+            --border-light: #2d2d2d;
+            --text-main: #f3f4f6;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --accent: #22c55e;
+            --accent-glow: rgba(34, 197, 94, 0.18);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background-image: radial-gradient(circle at 50% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 60%);
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            padding: 36px 32px;
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 14px;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+        .brand-sub {
+            font-size: 0.84rem;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        .banner-notice {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .banner-notice.danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #090909;
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.92rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .toggle-pwd {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+        }
+        .toggle-pwd:hover { color: #ffffff; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: var(--accent);
+            color: #080808;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-submit:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            margin-top: 14px;
+            text-align: center;
+            display: none;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: #ffffff; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-header">
+            <div class="brand-logo">🔐</div>
+            <h1 class="brand-title">Authentification Sécurisée</h1>
+            <p class="brand-sub">Console d'Administration & Espace Client</p>
+        </div>
+
+        <div class="banner-notice" id="bannerNotice">
+            <span id="bannerIcon">⚠️</span>
+            <span id="bannerText">Connexion requise pour accéder à cette section.</span>
+        </div>
+
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label" for="username">Identifiant ou Email pro</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" class="form-input" placeholder="Votre identifiant" required autocomplete="username" autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Mot de passe</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" class="form-input" placeholder="Mot de passe sécurisé" required autocomplete="current-password">
+                    <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility()" title="Afficher/Masquer">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span>Se connecter</span>
+                <span>➔</span>
+            </button>
+
+            <div class="error-msg" id="errorMsg"></div>
+        </form>
+
+        <div class="footer-links">
+            <a href="/">← Retour au site TapTapNFC</a>
+        </div>
+    </div>
+
+    <script>
+        // Check URL parameters for redirection notices
+        window.addEventListener('DOMContentLoaded', function() {
+            var params = new URLSearchParams(window.location.search);
+            var notice = document.getElementById('bannerNotice');
+            var icon = document.getElementById('bannerIcon');
+            var text = document.getElementById('bannerText');
+
+            if (params.get('auth') === 'required') {
+                notice.style.display = 'flex';
+                icon.textContent = '🔒';
+                text.textContent = 'Authentification requise pour accéder à cette page.';
+            } else if (params.get('error') === 'forbidden') {
+                notice.className = 'banner-notice danger';
+                notice.style.display = 'flex';
+                icon.textContent = '🚫';
+                text.textContent = 'Accès refusé : rôle non autorisé pour cette section.';
+            } else if (params.get('error') === 'expired') {
+                notice.style.display = 'flex';
+                icon.textContent = '⏳';
+                text.textContent = 'Votre session a expiré. Veuillez vous reconnecter.';
+            }
+        });
+
+        function togglePasswordVisibility() {
+            var input = document.getElementById('password');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            var username = document.getElementById('username').value.trim();
+            var password = document.getElementById('password').value.trim();
+            var btn = document.getElementById('submitBtn');
+            var err = document.getElementById('errorMsg');
+
+            if (!username || !password) return false;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Vérification sécurisée...</span>';
+            err.style.display = 'none';
+
+            try {
+                var res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        usernameOrEmail: username,
+                        password: password
+                    })
+                });
+
+                var data = await res.json().catch(function(){ return {}; });
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Identifiant ou mot de passe incorrect.');
+                }
+
+                // Check for redirect param in current URL
+                var params = new URLSearchParams(window.location.search);
+                var target = params.get('redirect');
+
+                // Validate target to prevent open redirect
+                if (target && target.indexOf('/') === 0 && target.indexOf('//') !== 0) {
+                    window.location.href = target;
+                } else {
+                    window.location.href = data.redirect || (data.user && data.user.role === 'admin' ? '/admin.html' : '/client.html');
+                }
+
+            } catch (error) {
+                err.textContent = error.message || 'Identifiant ou mot de passe incorrect.';
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<span>Se connecter</span> <span>➔</span>';
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>
