@@ -489,6 +489,7 @@
 
                 <div style="display:flex;gap:10px;margin-top:16px;">
                     <button type="button" class="btn-action" style="flex:1;justify-content:center;padding:11px;" onclick="closeCustomModal()">Annuler</button>
+                    <button type="button" class="btn-action" style="background:#200b0d;color:#f87171;border-color:#5a1a1f;padding:11px;font-weight:600;" onclick="deleteCurrentModalOrder()" title="Supprimer définitivement cette commande">🗑️ Supprimer</button>
                     <button type="submit" class="btn-submit" id="saveCustomBtn" style="flex:2;margin-top:0;">Enregistrer les modifications</button>
                 </div>
             </form>
@@ -952,6 +953,49 @@
             }
         }
 
+        async function deleteOrderPrompt(recordId, company, codeClient) {
+            var ref = codeClient || recordId;
+            var confirmMsg = '⚠️ Êtes-vous sûr de vouloir supprimer définitivement la commande ' + ref + (company ? ' (' + company + ')' : '') + ' ?\n\nCette action est irréversible et supprimera la commande de la base de données.';
+            if (!confirm(confirmMsg)) return;
+
+            var sess = getAdminSession();
+            var token = sess ? sess.token : null;
+
+            try {
+                var res = await fetch('/api/admin/orders/delete', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'admin-delete-order',
+                        recordId: recordId,
+                        adminToken: token
+                    })
+                });
+
+                var data = await res.json().catch(function(){ return {}; });
+                if (res.ok && data.success) {
+                    await fetchAllData();
+                } else {
+                    alert(data.error || 'Erreur lors de la suppression de la commande.');
+                }
+            } catch(e) {
+                alert('Erreur réseau lors de la suppression.');
+            }
+        }
+
+        async function deleteCurrentModalOrder() {
+            var recordId = document.getElementById('editOrderId').value;
+            if (!recordId) return;
+
+            var order = ORDERS.find(function(o){ return o.id === recordId; });
+            var comp = order && order.fields ? (order.fields.Entreprise || '') : '';
+            var code = order && order.fields ? (order.fields['Code Client'] || recordId) : recordId;
+
+            closeCustomModal();
+            await deleteOrderPrompt(recordId, comp, code);
+        }
+
         function renderView() {
             var filterVal = document.getElementById('statusFilter').value;
             var searchVal = (document.getElementById('searchInput').value || '').trim().toLowerCase();
@@ -1087,6 +1131,7 @@
                                 '<button class="btn-action" style="background:#262626;color:#fff;border-color:#444;" onclick="openCustomizeModal(\'' + o.id + '\')">⚙️ Configurer / Modifier</button>' +
                                 '<a href="tel:' + escapeHtml(f.Telephone) + '" class="btn-action">📞 Appeler</a>' +
                                 '<a href="mailto:' + escapeHtml(f.Email) + '" class="btn-action">✉️ Email</a>' +
+                                '<button class="btn-action" style="background:#200b0d;color:#f87171;border-color:#5a1a1f;" onclick="deleteOrderPrompt(\'' + o.id + '\', \'' + escapeHtml(f.Entreprise).replace(/'/g, "\\'") + '\', \'' + escapeHtml(f['Code Client'] || o.id) + '\')" title="Supprimer définitivement la commande">🗑️ Supprimer</button>' +
                             '</div>' +
                             '<div class="status-updater">' +
                                 '<span>Statut :</span>' +
