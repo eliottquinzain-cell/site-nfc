@@ -540,28 +540,49 @@
             return false;
         }
 
-        function logoutClient() {
+        async function logoutClient() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            } catch(e){}
             localStorage.removeItem('nfc_client_session');
             localStorage.removeItem('nfc_client_auth');
-            location.reload();
+            window.location.href = '/login.html';
         }
 
-        // Auto-login if session exists
-        async function checkAutoLogin() {
-            var raw = localStorage.getItem('nfc_client_session');
-            if (raw) {
-                try {
-                    var sess = JSON.parse(raw);
-                    if (sess.email && sess.pwd) {
-                        document.getElementById('clientEmail').value = sess.email;
-                        document.getElementById('clientPassword').value = sess.pwd;
-                        handleClientLogin();
+        // Auto-load client dashboard if authenticated
+        async function checkSession() {
+            try {
+                var res = await fetch('/api/auth/me', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (res.ok) {
+                    var authData = await res.json();
+                    if (authData.authenticated && authData.user) {
+                        var orderRes = await fetch('/api/client/order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ email: authData.user.email })
+                        });
+                        if (orderRes.ok) {
+                            var orderData = await orderRes.json();
+                            if (orderData.order) {
+                                CURRENT_ORDER = orderData.order;
+                                displayDashboard(orderData.order);
+                                return;
+                            }
+                        }
                     }
-                } catch(e){}
+                }
+            } catch(e) {
+                console.error('Session check failed:', e);
             }
         }
 
-        checkAutoLogin();
+        checkSession();
     </script>
 </body>
 </html>
