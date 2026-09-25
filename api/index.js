@@ -239,6 +239,27 @@ module.exports = async (req, res) => {
         }
 
         // ==========================================
+        // ROUTE: ADMIN DELETE ORDER
+        // ==========================================
+        if (pathname === '/api/admin/orders/delete' || action === 'admin-delete-order') {
+            let user = getSessionUser(req);
+            if (!user && body.adminToken) {
+                user = verifyJwt(body.adminToken);
+            }
+            if (!user || user.role !== 'admin') {
+                return res.status(403).json({ success: false, error: 'Accès refusé. Rôle administrateur requis.' });
+            }
+
+            const recordId = body.recordId || body.id || body.orderId || body.codeClient;
+            if (!recordId) {
+                return res.status(400).json({ success: false, error: 'Identifiant de commande manquant.' });
+            }
+
+            const deleted = await db.deleteOrder(recordId);
+            return res.status(200).json({ success: true, deletedOrder: deleted });
+        }
+
+        // ==========================================
         // ROUTE: ORDER CREATE (from checkout)
         // ==========================================
         if (pathname === '/api/order/create' || pathname === '/api/order' || action === 'create-order') {
