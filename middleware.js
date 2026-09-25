@@ -75,7 +75,10 @@ export default async function middleware(request) {
 
     // 1. IF ON LOGIN PAGE AND ALREADY LOGGED IN -> AUTO-REDIRECT TO DASHBOARD
     if (isLoginPage && session) {
-        const dest = session.role === 'admin' ? '/admin.html' : '/client.html';
+        let dest = '/admin.html';
+        if (session.role === 'client') {
+            dest = session.hasSubscription ? '/client.html' : '/suivi.html';
+        }
         return Response.redirect(new URL(dest, request.url), 302);
     }
 
@@ -106,8 +109,9 @@ export default async function middleware(request) {
         return;
     }
 
-    // 3. CLIENT ROUTE PROTECTION
+    // 3. CLIENT ROUTE PROTECTION (CONDITIONNÉ STRICTEMENT À L'ABONNEMENT)
     if (isProtectedClient) {
+        // Not authenticated -> Block and Redirect to login
         if (!session) {
             const loginUrl = new URL('/login.html', request.url);
             loginUrl.searchParams.set('redirect', pathname);
@@ -115,12 +119,19 @@ export default async function middleware(request) {
             return Response.redirect(loginUrl, 302);
         }
 
+        // Client without subscription -> Block and Redirect to lightweight tracking page
+        if (session.role === 'client' && !session.hasSubscription) {
+            const trackingUrl = new URL('/suivi.html', request.url);
+            trackingUrl.searchParams.set('reason', 'no_subscription');
+            return Response.redirect(trackingUrl, 302);
+        }
+
         // Rewrite clean /client to /client.html
         if (pathname === '/client') {
             return Response.rewrite(new URL('/client.html', request.url));
         }
 
-        // Authenticated user allowed
+        // Authenticated subscriber or admin allowed
         return;
     }
 }
