@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de votre Carte NFC - TapTapNFC</title>
+    <meta name="description" content="Suivez en direct l'état de fabrication, de programmation et de livraison de votre carte connectée TapTapNFC.">
+    <style>
+        :root {
+            --bg-page: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-subtle: #1c1c1c;
+            --border: #262626;
+            --border-light: #333333;
+            --text-main: #f3f4f6;
+            --text-light: #9ca3af;
+            --text-muted: #6b7280;
+            --accent: #22c55e;
+            --accent-glow: rgba(34, 197, 94, 0.15);
+            --blue: #38bdf8;
+            --blue-glow: rgba(56, 189, 248, 0.15);
+            --orange: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 10%, rgba(56, 189, 248, 0.05) 0%, transparent 60%);
+        }
+
+        /* Header */
+        .site-header {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+        }
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-header {
+            font-size: 0.84rem;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-header-ghost {
+            color: var(--text-light);
+            border: 1px solid var(--border);
+        }
+        .btn-header-ghost:hover {
+            color: #fff;
+            border-color: var(--border-light);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Container */
+        .main-content {
+            flex: 1;
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        /* Redirection / Info Banner */
+        .info-banner {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 28px;
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            color: #fbbf24;
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+        .info-banner span.icon { font-size: 1.2rem; }
+
+        /* Search Section */
+        .search-hero {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+        .search-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+        }
+        .search-desc {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            max-width: 580px;
+            margin: 0 auto 24px;
+            line-height: 1.5;
+        }
+
+        .search-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            max-width: 540px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 0.95rem;
+            padding: 12px 16px;
+            outline: none;
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-btn {
+            background: var(--blue);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 22px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .search-btn:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 20px var(--blue-glow);
+        }
+
+        .search-error {
+            color: #f43f5e;
+            font-size: 0.84rem;
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 14px;
+            display: none;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        /* Result Section */
+        .result-container {
+            display: none;
+            margin-top: 32px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-header-card {
+            background: linear-gradient(135deg, #101c24, #0e1217);
+            border: 1px solid #1a3648;
+            border-radius: 18px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .status-business {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .commerce-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #e5e7eb;
+            padding: 4px 10px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .status-order-ref {
+            font-size: 0.88rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+        .status-badge {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-badge.delivered {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* Stepper */
+        .stepper-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .stepper-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stepper-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            position: relative;
+        }
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        .step-item::after {
+            content: '';
+            position: absolute;
+            top: 16px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #262626;
+            z-index: 1;
+        }
+        .step-item:last-child::after { display: none; }
+        .step-item.done::after { background: var(--blue); }
+
+        .step-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #181818;
+            border: 2px solid #333;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            z-index: 2;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .step-item.done .step-circle {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #000;
+            box-shadow: 0 0 15px var(--blue-glow);
+        }
+        .step-item.active .step-circle {
+            border-color: var(--blue);
+            color: var(--blue);
+            background: rgba(56, 189, 248, 0.12);
+        }
+        .step-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+        .step-item.done .step-label, .step-item.active .step-label { color: #fff; }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .detail-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .detail-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .detail-value {
+            font-size: 0.98rem;
+            color: #fff;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .detail-value a {
+            color: var(--blue);
+            text-decoration: underline;
+        }
+
+        /* Confirmation box */
+        .confirm-card {
+            background: rgba(34, 197, 94, 0.06);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 14px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .confirm-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .confirm-btn:hover { filter: brightness(1.1); }
+
+        /* Upgrade Banner */
+        .upgrade-card {
+            background: linear-gradient(135deg, #181524, #12101b);
+            border: 1px solid #3b2d69;
+            border-radius: 18px;
+            padding: 26px 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .upgrade-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #a855f7, #6366f1);
+        }
+        .upgrade-badge {
+            display: inline-block;
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 50px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .upgrade-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .upgrade-sub {
+            font-size: 0.88rem;
+            color: #d1d5db;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+        .upgrade-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .upgrade-feature {
+            font-size: 0.82rem;
+            color: #e9d5ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upgrade-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #9333ea, #6366f1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .upgrade-btn:hover { filter: brightness(1.15); }
+
+        @media (max-width: 640px) {
+            .stepper-steps { grid-template-columns: 1fr 1fr; gap: 16px; }
+            .step-item::after { display: none; }
+            .details-grid { grid-template-columns: 1fr; }
+            .upgrade-features { grid-template-columns: 1fr; }
+            .status-header-card { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="brand">
+                <div class="brand-icon">⚡</div>
+                <span>TapTap<span style="color:var(--blue);">NFC</span></span>
+            </a>
+            <div class="header-actions">
+                <a href="/" class="btn-header btn-header-ghost">Accueil</a>
+                <a href="/login.html" class="btn-header btn-header-ghost" style="border-color:#38bdf8;color:#38bdf8;">Espace Client Pro ➔</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Info Banner (shown if redirected because no subscription) -->
+        <div class="info-banner" id="noSubBanner">
+            <span class="icon">ℹ️</span>
+            <div>
+                <strong>Suivi simplifié de votre commande :</strong><br>
+                Votre formule de carte NFC (achat unique) ne comprend pas l'abonnement récurrent à l'Espace Client Analytique (10 €/mois). Vous pouvez suivre ici en direct et en toute transparence l'état de préparation, de gravure et d'expédition de votre commande !
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-hero">
+            <h1 class="search-title">Suivez votre carte TapTapNFC</h1>
+            <p class="search-desc">Entrez votre référence de commande (ex: TAP-8842) ou votre adresse e-mail professionnelle pour connaître l'avancement de votre carte.</p>
+
+            <form class="search-card" onsubmit="return handleSearch(event)">
+                <input type="text" id="searchInput" class="search-input" placeholder="Ex. : TAP-8842 ou contact@mon-commerce.fr" required autocomplete="off">
+                <button type="submit" id="searchSubmitBtn" class="search-btn">Suivre ma carte ➔</button>
+            </form>
+            <div id="searchError" class="search-error"></div>
+        </div>
+
+        <!-- Result Container -->
+        <div class="result-container" id="resultContainer">
+
+            <!-- Status Card -->
+            <div class="status-header-card">
+                <div>
+                    <div class="status-business">
+                        <span id="resBusinessIcon">🛍️</span>
+                        <span id="resBusiness">Votre Commerce</span>
+                        <span id="resCommerceTag" class="commerce-tag">Commerce</span>
+                    </div>
+                    <div class="status-order-ref">
+                        Commande : <strong id="resCodeClient" style="color:var(--blue);font-family:monospace;">TAP-0000</strong>
+                        &bull; Formule : <span id="resFormule">Pack Cartes</span>
+                    </div>
+                </div>
+                <div>
+                    <div id="resBadge" class="status-badge">⚡ En préparation</div>
+                </div>
+            </div>
+
+            <!-- Stepper -->
+            <div class="stepper-card">
+                <div class="stepper-title">
+                    <span>Avancement de votre commande</span>
+                    <span id="resCurrentStageText" style="color:var(--blue);font-size:0.84rem;">Étape 1 sur 4</span>
+                </div>
+                <div class="stepper-steps">
+                    <div class="step-item" id="step1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Prise en charge & Validation</div>
+                    </div>
+                    <div class="step-item" id="step2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Gravure laser & Programmation</div>
+                    </div>
+                    <div class="step-item" id="step3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Expédition en cours</div>
+                    </div>
+                    <div class="step-item" id="step4">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Livrée & Prête</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div class="details-grid">
+                <div class="detail-box">
+                    <div class="detail-label">Configuration de la Puce NFC</div>
+                    <div class="detail-value" id="resConfigAction">⭐ Avis Google Maps</div>
+                    <div id="resLinkPreview" style="margin-top:6px;font-size:0.8rem;color:var(--text-light);"></div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Livraison estimée</div>
+                    <div class="detail-value" id="resDelivery">🚚 Sous 48h ouvrées</div>
+                </div>
+                <div class="detail-box" style="grid-column: 1 / -1;">
+                    <div class="detail-label">Notes de l'Atelier de Programmation</div>
+                    <div class="detail-value" id="resNotes" style="font-weight:400;font-size:0.9rem;color:#d1d5db;">
+                        Vos puces sont en cours de configuration par Eliott.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery confirmation action -->
+            <div class="confirm-card" id="confirmCard">
+                <div>
+                    <div style="font-weight:700;font-size:0.95rem;color:#4ade80;margin-bottom:2px;">
+                        📦 Vous avez reçu votre colis ?
+                    </div>
+                    <div style="font-size:0.82rem;color:var(--text-light);">
+                        Confirmez la bonne réception de votre carte pour clore la livraison.
+                    </div>
+                </div>
+                <button type="button" class="confirm-btn" id="confirmBtn" onclick="confirmReception()">
+                    ✓ Confirmer la réception
+                </button>
+            </div>
+
+            <div id="receivedNotice" style="display:none;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:12px 18px;margin-bottom:24px;color:#4ade80;font-size:0.88rem;align-items:center;gap:8px;">
+                <span>✓</span> Réception confirmée. Votre carte NFC est prête à l'emploi dans votre établissement !
+            </div>
+
+            <!-- Upgrade Option Banner -->
+            <div class="upgrade-card">
+                <span class="upgrade-badge">Option Recommandée</span>
+                <h3 class="upgrade-title">Passez à l'Espace Pro & Redirection Dynamique</h3>
+                <p class="upgrade-sub">
+                    Votre carte actuelle est programmée avec un lien fixe. Avec l'Espace Pro (10 €/mois sans engagement), gardez le contrôle total à distance de votre carte.
+                </p>
+                <div class="upgrade-features">
+                    <div class="upgrade-feature">🔄 Modifiez le lien en 1 clic sans changer la carte physique</div>
+                    <div class="upgrade-feature">📊 Statistiques de scans et clics en direct</div>
+                    <div class="upgrade-feature">🍽️ Changez de menu du jour ou de carte des saisons à volonté</div>
+                    <div class="upgrade-feature">🛡️ Support prioritaire par WhatsApp / Téléphone</div>
+                </div>
+                <a href="/login.html" class="upgrade-btn">
+                    Activer l'Espace Pro (10 €/mois) ➔
+                </a>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        var CURRENT_TRACKING = null;
+
+        window.addEventListener('DOMContentLoaded', function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('reason') === 'no_subscription') {
+                var banner = document.getElementById('noSubBanner');
+                if (banner) banner.style.display = 'flex';
+            }
+
+            var codeParam = params.get('code') || params.get('q');
+            if (codeParam) {
+                document.getElementById('searchInput').value = codeParam;
+                fetchTracking(codeParam);
+            }
+        });
+
+        async function handleSearch(e) {
+            e.preventDefault();
+            var val = document.getElementById('searchInput').value.trim();
+            if (!val) return false;
+            await fetchTracking(val);
+            return false;
+        }
+
+        async function fetchTracking(query) {
+            var btn = document.getElementById('searchSubmitBtn');
+            var err = document.getElementById('searchError');
+            var container = document.getElementById('resultContainer');
+
+            btn.disabled = true;
+            btn.textContent = 'Recherche...';
+            err.style.display = 'none';
+
+            try {
+                var res = await fetch('/api/tracking/lookup?code=' + encodeURIComponent(query));
+                var data = await res.json().catch(function() { return {}; });
+
+                if (!res.ok || !data.success || !data.tracking) {
+                    throw new Error(data.error || 'Aucune commande trouvée avec cette référence ou cet e-mail.');
+                }
+
+                CURRENT_TRACKING = data.tracking;
+                renderTracking(data.tracking);
+                container.style.display = 'block';
+
+            } catch(error) {
+                err.textContent = error.message;
+                err.style.display = 'block';
+                container.style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Suivre ma carte ➔';
+            }
+        }
+
+        function renderTracking(t) {
+            document.getElementById('resBusiness').textContent = t.business || 'Votre Établissement';
+            document.getElementById('resCodeClient').textContent = t.codeClient;
+            document.getElementById('resFormule').textContent = t.formule || 'Pack cartes';
+            document.getElementById('resNotes').textContent = t.notesAtelier || 'Puces NFC en cours de préparation dans notre atelier.';
+            document.getElementById('resDelivery').textContent = t.dateLivraisonPrevue || 'Sous 48h ouvrées';
+
+            // Commerce icon & tag
+            var iconEl = document.getElementById('resBusinessIcon');
+            var tagEl = document.getElementById('resCommerceTag');
+            var type = t.typeCommerce || 'commerce';
+
+            if (type === 'restaurant') {
+                iconEl.textContent = '🍽️';
+                tagEl.textContent = 'Restaurant / Bar';
+            } else if (type === 'coiffeur') {
+                iconEl.textContent = '💇';
+                tagEl.textContent = 'Coiffure & Beauté';
+            } else {
+                iconEl.textContent = '🛍️';
+                tagEl.textContent = 'Commerce';
+            }
+
+            // Action details
+            var actEl = document.getElementById('resConfigAction');
+            var linkEl = document.getElementById('resLinkPreview');
+            var actionType = t.typeAction || 'avis_google';
+
+            if (actionType === 'menu_restaurant' || actionType === 'menu_enligne') {
+                actEl.innerHTML = '🍽️ Menu en ligne / Carte numérique';
+                if (t.lienMenu) {
+                    linkEl.innerHTML = 'Lien configuré : <a href="' + t.lienMenu + '" target="_blank" rel="noopener">Consulter le menu ↗</a>';
+                } else {
+                    linkEl.textContent = 'Lien du menu en cours de validation';
+                }
+            } else if (actionType === 'double_action') {
+                actEl.innerHTML = '🚀 Double Action : Menu + Avis Google';
+                var htmlParts = [];
+                if (t.lienMenu) htmlParts.push('<a href="' + t.lienMenu + '" target="_blank" rel="noopener">Menu en ligne ↗</a>');
+                if (t.lienGoogle) htmlParts.push('<a href="' + t.lienGoogle + '" target="_blank" rel="noopener">Avis Google ↗</a>');
+                linkEl.innerHTML = htmlParts.length ? htmlParts.join(' &bull; ') : 'Liens en cours de configuration';
+            } else if (actionType === 'rdv') {
+                actEl.innerHTML = '📅 Prise de Rendez-vous & Avis';
+                linkEl.textContent = t.lienGoogle ? 'Lien configuré' : 'Lien en cours de configuration';
+            } else {
+                actEl.innerHTML = '⭐ Avis Google Maps 5 Étoiles';
+                if (t.lienGoogle) {
+                    linkEl.innerHTML = '<a href="' + t.lienGoogle + '" target="_blank" rel="noopener">Tester la redirection Google ↗</a>';
+                } else {
+                    linkEl.textContent = 'Lien Google en cours de configuration par Eliott';
+                }
+            }
+
+            // Stepper & Badges
+            var etape = t.etape || '1. Prise en charge';
+            var status = t.statut || 'Nouvelle';
+            var badgeEl = document.getElementById('resBadge');
+            var stageTextEl = document.getElementById('resCurrentStageText');
+
+            var s1 = document.getElementById('step1');
+            var s2 = document.getElementById('step2');
+            var s3 = document.getElementById('step3');
+            var s4 = document.getElementById('step4');
+
+            s1.className = 'step-item done';
+            s2.className = 'step-item';
+            s3.className = 'step-item';
+            s4.className = 'step-item';
+
+            if (t.receptionClient || status === 'Livré' || etape.indexOf('6.') !== -1) {
+                s2.className = 'step-item done';
+                s3.className = 'step-item done';
+                s4.className = 'step-item done';
+                badgeEl.className = 'status-badge delivered';
+                badgeEl.innerHTML = '✓ Carte Livrée';
+                stageTextEl.textContent = 'Commande terminée & livrée';
+                document.getElementById('confirmCard').style.display = 'none';
+                document.getElementById('receivedNotice').style.display = 'flex';
+            } else if (etape.indexOf('5.') !== -1 || status === 'Expédiée') {
+                s2.className = 'step-item done';
+                s3.className = 'step-item active';
+                badgeEl.className = 'status-badge';
+                badgeEl.innerHTML = '🚚 En cours de livraison';
+                stageTextEl.textContent = 'Étape 3 sur 4 : En route';
+                document.getElementById('confirmCard').style.display = 'flex';
+                document.getElementById('receivedNotice').style.display = 'none';
+            } else if (etape.indexOf('2.') !== -1 || etape.indexOf('3.') !== -1 || etape.indexOf('4.') !== -1 || status === 'En cours') {
+                s2.className = 'step-item active';
+                badgeEl.className = 'status-badge';
+                badgeEl.innerHTML = '⚡ Gravure & Programmation';
+                stageTextEl.textContent = 'Étape 2 sur 4 : En atelier';
+                document.getElementById('confirmCard').style.display = 'none';
+                document.getElementById('receivedNotice').style.display = 'none';
+            } else {
+                badgeEl.className = 'status-badge';
+                badgeEl.innerHTML = '📋 Prise en charge';
+                stageTextEl.textContent = 'Étape 1 sur 4 : Enregistrée';
+                document.getElementById('confirmCard').style.display = 'none';
+                document.getElementById('receivedNotice').style.display = 'none';
+            }
+        }
+
+        async function confirmReception() {
+            if (!CURRENT_TRACKING) return;
+            var btn = document.getElementById('confirmBtn');
+            btn.disabled = true;
+            btn.textContent = 'Confirmation en cours...';
+
+            try {
+                var res = await fetch('/api/client/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: CURRENT_TRACKING.codeClient })
+                });
+
+                if (res.ok) {
+                    CURRENT_TRACKING.receptionClient = true;
+                    CURRENT_TRACKING.statut = 'Livré';
+                    renderTracking(CURRENT_TRACKING);
+                } else {
+                    alert('Erreur lors de la confirmation.');
+                }
+            } catch(e) {
+                alert('Erreur réseau.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✓ Confirmer la réception';
+            }
+        }
+    </script>
+</body>
+</html>
