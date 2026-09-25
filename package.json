@@ -1,0 +1,14 @@
+{
+  "name": "taptapnfc",
+  "version": "2.0.0",
+  "private": true,
+  "description": "TapTapNFC - Site officiel avec backend sécurisé Node.js et PostgreSQL",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.5"
+  }
+}
