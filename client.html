@@ -126,9 +126,9 @@
                 <span class="brand-badge">Espace Client</span>
             </a>
 
-            <div class="header-nav">
+            <div class="header-nav" style="display:flex;align-items:center;gap:12px;">
                 <a href="/" target="_blank">Retour au site ↗</a>
-                <button id="logoutBtn" style="display:none;background:none;border:1px solid var(--border);color:var(--text-light);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;" onclick="logoutClient()">Déconnexion</button>
+                <a href="/api/auth/logout" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:#d1d5db;padding:5px 12px;border-radius:6px;font-size:.78rem;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">Se déconnecter</a>
             </div>
         </div>
     </header>
