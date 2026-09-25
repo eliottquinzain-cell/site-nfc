@@ -427,6 +427,8 @@
                         <option value="5. En cours de livraison">5. 🚚 En cours de livraison</option>
                         <option value="6. Livrée & Confirmée">6. ✅ Livrée & Confirmée</option>
                     </select>
+                </div>
+
                 <div class="form-group">
                     <label for="editTypeCommerce">Type d'établissement</label>
                     <select id="editTypeCommerce" class="form-select">
@@ -954,8 +956,10 @@
         }
 
         async function deleteOrderPrompt(recordId, company, codeClient) {
-            var ref = codeClient || recordId;
-            var confirmMsg = '⚠️ Êtes-vous sûr de vouloir supprimer définitivement la commande ' + ref + (company ? ' (' + company + ')' : '') + ' ?\n\nCette action est irréversible et supprimera la commande de la base de données.';
+            var order = ORDERS.find(function(o){ return String(o.id) === String(recordId); });
+            var comp = company || (order && order.fields ? order.fields.Entreprise : '');
+            var ref = codeClient || (order && order.fields ? order.fields['Code Client'] : recordId);
+            var confirmMsg = '⚠️ Êtes-vous sûr de vouloir supprimer définitivement la commande ' + ref + (comp ? ' (' + comp + ')' : '') + ' ?\n\nCette action est irréversible et supprimera la commande de la base de données.';
             if (!confirm(confirmMsg)) return;
 
             var sess = getAdminSession();
@@ -1131,7 +1135,7 @@
                                 '<button class="btn-action" style="background:#262626;color:#fff;border-color:#444;" onclick="openCustomizeModal(\'' + o.id + '\')">⚙️ Configurer / Modifier</button>' +
                                 '<a href="tel:' + escapeHtml(f.Telephone) + '" class="btn-action">📞 Appeler</a>' +
                                 '<a href="mailto:' + escapeHtml(f.Email) + '" class="btn-action">✉️ Email</a>' +
-                                '<button class="btn-action" style="background:#200b0d;color:#f87171;border-color:#5a1a1f;" onclick="deleteOrderPrompt(\'' + o.id + '\', \'' + escapeHtml(f.Entreprise).replace(/'/g, "\\'") + '\', \'' + escapeHtml(f['Code Client'] || o.id) + '\')" title="Supprimer définitivement la commande">🗑️ Supprimer</button>' +
+                                '<button class="btn-action" style="background:#200b0d;color:#f87171;border-color:#5a1a1f;" onclick="deleteOrderPrompt(\'' + o.id + '\')" title="Supprimer définitivement la commande">🗑️ Supprimer</button>' +
                             '</div>' +
                             '<div class="status-updater">' +
                                 '<span>Statut :</span>' +
