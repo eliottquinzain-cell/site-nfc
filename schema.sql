@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) NOT NULL DEFAULT 'client', -- 'admin', 'client'
     name VARCHAR(255),
     badge VARCHAR(100),
+    has_subscription BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -31,6 +32,10 @@ CREATE TABLE IF NOT EXISTS orders (
     email VARCHAR(255) NOT NULL,
     adresse TEXT,
     lien_google TEXT,
+    lien_menu TEXT,
+    type_commerce VARCHAR(50) DEFAULT 'commerce', -- 'restaurant', 'coiffeur', 'commerce', 'autre'
+    type_action VARCHAR(50) DEFAULT 'avis_google', -- 'avis_google', 'menu_restaurant', 'double_action', 'rdv'
+    has_subscription BOOLEAN DEFAULT FALSE, -- Abonnement Espace Client (10€/mois)
     formule VARCHAR(100) DEFAULT 'Pack 2 cartes NFC',
     prix NUMERIC(10, 2) DEFAULT 70.00,
     statut VARCHAR(50) DEFAULT 'Nouvelle',
