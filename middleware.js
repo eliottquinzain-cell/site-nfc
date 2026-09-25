@@ -73,13 +73,26 @@ export default async function middleware(request) {
     const sessionToken = getCookieValue(cookieHeader, COOKIE_NAME);
     const session = sessionToken ? await verifyEdgeJwt(sessionToken, JWT_SECRET) : null;
 
-    // 1. IF ON LOGIN PAGE AND ALREADY LOGGED IN -> AUTO-REDIRECT TO DASHBOARD
-    if (isLoginPage && session) {
-        let dest = '/admin.html';
-        if (session.role === 'client') {
-            dest = session.hasSubscription ? '/client.html' : '/suivi.html';
+    // 1. IF ON LOGIN PAGE AND ALREADY LOGGED IN -> ONLY REDIRECT IF NO EXPLICIT INTENT
+    // Never auto-redirect if there are query parameters (e.g. error=forbidden, redirect=/admin.html, switch, logout)
+    const hasIntent = url.searchParams.has('error') || 
+                      url.searchParams.has('redirect') || 
+                      url.searchParams.has('auth') || 
+                      url.searchParams.has('switch') || 
+                      url.searchParams.has('logout');
+
+    if (isLoginPage) {
+        if (hasIntent) {
+            return; // Allow user to see the login form and switch accounts
         }
-        return Response.redirect(new URL(dest, request.url), 302);
+        if (session) {
+            let dest = '/admin.html';
+            if (session.role === 'client') {
+                dest = session.hasSubscription ? '/client.html' : '/suivi.html';
+            }
+            return Response.redirect(new URL(dest, request.url), 302);
+        }
+        return;
     }
 
     // 2. ADMIN ROUTE PROTECTION
