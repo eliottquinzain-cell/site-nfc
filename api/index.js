@@ -90,31 +90,44 @@ module.exports = async (req, res) => {
             }
 
             // Create JWT Session
+            const hasSub = Boolean(user.has_subscription);
             const sessionPayload = {
                 id: user.id,
                 username: user.username,
                 email: user.email,
                 role: user.role,
                 name: user.name,
-                badge: user.badge
+                badge: user.badge,
+                hasSubscription: hasSub
             };
 
             const token = signJwt(sessionPayload);
             res.setHeader('Set-Cookie', createSessionCookie(token));
 
-            const destination = user.role === 'admin' ? '/admin.html' : '/client.html';
+            let destination = '/admin.html';
+            if (user.role === 'client') {
+                if (hasSub) {
+                    destination = '/client.html';
+                } else {
+                    const order = await db.findOrderForClient(user.email);
+                    const code = order ? order.code_client : '';
+                    destination = `/suivi.html${code ? '?code=' + code : ''}`;
+                }
+            }
 
             return res.status(200).json({
                 success: true,
                 token: token,
                 redirect: destination,
+                hasSubscription: hasSub,
                 user: {
                     id: user.id,
                     username: user.username,
                     email: user.email,
                     role: user.role,
                     name: user.name,
-                    badge: user.badge
+                    badge: user.badge,
+                    hasSubscription: hasSub
                 }
             });
         }
@@ -170,6 +183,11 @@ module.exports = async (req, res) => {
                     'Code Client': o.code_client,
                     Prix: o.prix,
                     Lien: o.lien_google,
+                    'Lien menu': o.lien_menu || '',
+                    'Type commerce': o.type_commerce || 'commerce',
+                    'Type action': o.type_action || 'avis_google',
+                    'Abonnement': o.has_subscription === true ? 'Abonné Pro (10€/m)' : 'Sans abonnement',
+                    'Abonnement statut': o.has_subscription === true,
                     'Reception client': o.reception_client
                 }
             }));
@@ -217,6 +235,56 @@ module.exports = async (req, res) => {
         }
 
         // ==========================================
+        // ROUTE: ORDER CREATE (from checkout)
+        // ==========================================
+        if (pathname === '/api/order/create' || pathname === '/api/order' || action === 'create-order') {
+            const orderData = {
+                entreprise: body.entreprise || body.business,
+                nom: body.nom || body.name,
+                email: body.email,
+                telephone: body.telephone || body.phone,
+                motDePasse: body.motDePasse || body.password,
+                codeClient: body.codeClient,
+                adresse: body.adresse || body.address,
+                lienGoogle: body.lienGoogle || body.lien_google,
+                lienMenu: body.lienMenu || body.lien_menu,
+                typeCommerce: body.typeCommerce || body.type_commerce || 'commerce',
+                typeAction: body.typeAction || body.type_action || 'avis_google',
+                hasSubscription: body.hasSubscription === true || body.hasSubscription === 'true' || body.has_subscription === true,
+                formule: body.formule,
+                prix: body.prix,
+                message: body.message
+            };
+
+            const created = await db.createOrder(orderData);
+            return res.status(200).json({
+                success: true,
+                order: created,
+                codeClient: created.code_client,
+                hasSubscription: created.has_subscription === true
+            });
+        }
+
+        // ==========================================
+        // ROUTE: PUBLIC ORDER TRACKING LOOKUP (No login needed)
+        // ==========================================
+        if (pathname === '/api/tracking/lookup' || pathname === '/api/tracking' || action === 'tracking-lookup') {
+            const queryParam = url.searchParams.get('code') || url.searchParams.get('email') || url.searchParams.get('q');
+            const searchKey = (queryParam || body.code || body.email || body.query || '').trim();
+
+            if (!searchKey) {
+                return res.status(400).json({ success: false, error: 'Numéro de commande ou email requis.' });
+            }
+
+            const tracking = await db.findPublicTracking(searchKey);
+            if (!tracking) {
+                return res.status(404).json({ success: false, error: 'Aucune commande trouvée avec cette référence.' });
+            }
+
+            return res.status(200).json({ success: true, tracking });
+        }
+
+        // ==========================================
         // ROUTE: CLIENT GET ORDER
         // ==========================================
         if (pathname === '/api/client/order' || (action === 'client-login' && req.method === 'POST')) {
@@ -239,6 +307,10 @@ module.exports = async (req, res) => {
                     phone: order.telephone,
                     address: order.adresse,
                     googleLink: order.lien_google,
+                    lienMenu: order.lien_menu || '',
+                    typeCommerce: order.type_commerce || 'commerce',
+                    typeAction: order.type_action || 'avis_google',
+                    hasSubscription: Boolean(order.has_subscription),
                     formule: order.formule,
                     prix: `${order.prix}€`,
                     date: order.created_at,
