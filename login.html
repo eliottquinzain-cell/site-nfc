@@ -214,6 +214,8 @@
             <span id="bannerText">Connexion requise pour accéder à cette section.</span>
         </div>
 
+        <div id="activeUserBox" style="display:none;background:#181818;border:1px solid #2a2a2a;border-radius:10px;padding:10px 14px;font-size:.82rem;color:#d1d5db;margin-bottom:16px;text-align:center;"></div>
+
         <form id="loginForm" onsubmit="return handleLogin(event)">
             <div class="form-group">
                 <label class="form-label" for="username">Identifiant ou Email pro</label>
@@ -245,26 +247,44 @@
 
     <script>
         // Check URL parameters for redirection notices
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', async function() {
             var params = new URLSearchParams(window.location.search);
             var notice = document.getElementById('bannerNotice');
             var icon = document.getElementById('bannerIcon');
             var text = document.getElementById('bannerText');
 
-            if (params.get('auth') === 'required') {
+            if (params.get('logout') === 'true') {
+                notice.style.display = 'flex';
+                icon.textContent = '👋';
+                text.textContent = 'Vous avez été déconnecté avec succès.';
+            } else if (params.get('auth') === 'required') {
                 notice.style.display = 'flex';
                 icon.textContent = '🔒';
-                text.textContent = 'Authentification requise pour accéder à cette page.';
+                text.textContent = 'Authentification requise pour accéder à la console.';
             } else if (params.get('error') === 'forbidden') {
                 notice.className = 'banner-notice danger';
                 notice.style.display = 'flex';
                 icon.textContent = '🚫';
-                text.textContent = 'Accès refusé : rôle non autorisé pour cette section.';
+                text.innerHTML = 'Accès réservé aux administrateurs. Connectez-vous avec vos identifiants admin ou <a href="/api/auth/logout" style="color:#fff;text-decoration:underline;font-weight:700;">cliquez ici pour vous déconnecter</a>.';
             } else if (params.get('error') === 'expired') {
                 notice.style.display = 'flex';
                 icon.textContent = '⏳';
                 text.textContent = 'Votre session a expiré. Veuillez vous reconnecter.';
             }
+
+            // Check if user has an active session
+            try {
+                var meRes = await fetch('/api/auth/me', { method: 'GET', credentials: 'include' });
+                if (meRes.ok) {
+                    var meData = await meRes.json();
+                    if (meData.authenticated && meData.user) {
+                        var box = document.getElementById('activeUserBox');
+                        var isAd = meData.user.role === 'admin';
+                        box.innerHTML = 'Connecté en tant que <strong style="color:#fff;">' + (meData.user.name || meData.user.username) + '</strong> (' + (isAd ? 'Admin' : 'Client') + ') &bull; <a href="/api/auth/logout" style="color:#38bdf8;text-decoration:underline;">Se déconnecter</a>';
+                        box.style.display = 'block';
+                    }
+                }
+            } catch(e){}
         });
 
         function togglePasswordVisibility() {
