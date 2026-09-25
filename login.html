@@ -322,6 +322,15 @@
                     throw new Error(data.error || 'Identifiant ou mot de passe incorrect.');
                 }
 
+                if (data.token && data.user && data.user.role === 'admin') {
+                    try {
+                        localStorage.setItem('nfc_admin_session', JSON.stringify({
+                            token: data.token,
+                            user: data.user
+                        }));
+                    } catch(e){}
+                }
+
                 // Check for redirect param in current URL
                 var params = new URLSearchParams(window.location.search);
                 var target = params.get('redirect');
