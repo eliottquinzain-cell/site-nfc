@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { hashPassword } = require('./lib/auth');
 
 let Pool;
@@ -218,6 +219,9 @@ async function initDb() {
                 ALTER TABLE orders ADD COLUMN IF NOT EXISTS type_action VARCHAR(50) DEFAULT 'avis_google';
                 ALTER TABLE orders ADD COLUMN IF NOT EXISTS lien_menu TEXT;
                 ALTER TABLE orders ADD COLUMN IF NOT EXISTS has_subscription BOOLEAN DEFAULT FALSE;
+                ALTER TABLE orders ADD COLUMN IF NOT EXISTS confirmation_email_sent BOOLEAN DEFAULT FALSE;
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+                ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
 
                 CREATE TABLE IF NOT EXISTS sav_tickets (
                     id SERIAL PRIMARY KEY,
@@ -312,30 +316,296 @@ async function initDb() {
 }
 
 /**
- * Find user by username or email
+ * Find user by username, email, or order reference code (e.g. TAP-XXXX)
  */
 async function findUserByUsernameOrEmail(identifier) {
     await initDb();
     if (!identifier) return null;
     const clean = identifier.trim().toLowerCase();
+    const activePool = getPool();
 
-    if (pool) {
+    if (activePool) {
         try {
-            const res = await pool.query(
-                'SELECT * FROM users WHERE LOWER(username) = $1 OR LOWER(email) = $1',
+            // 1. Direct match on users table
+            let res = await activePool.query(
+                'SELECT * FROM users WHERE LOWER(username) = $1 OR LOWER(email) = $1 LIMIT 1',
                 [clean]
             );
             if (res.rows.length > 0) return res.rows[0];
+
+            // 2. Match on order reference (e.g. TAP-9901, TAP-1234)
+            const orderRes = await activePool.query(
+                'SELECT email, nom_client, has_subscription FROM orders WHERE LOWER(code_client) = $1 LIMIT 1',
+                [clean]
+            );
+            if (orderRes.rows.length > 0 && orderRes.rows[0].email) {
+                const orderEmail = orderRes.rows[0].email.toLowerCase();
+                res = await activePool.query(
+                    'SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1',
+                    [orderEmail]
+                );
+                if (res.rows.length > 0) return res.rows[0];
+            }
         } catch (e) {
             console.error('Postgres error in findUserByUsernameOrEmail:', e.message);
         }
     }
 
     // In-memory fallback
-    return memoryStore.users.find(u => 
+    let user = memoryStore.users.find(u => 
         (u.username && u.username.toLowerCase() === clean) || 
         (u.email && u.email.toLowerCase() === clean)
-    ) || null;
+    );
+    if (!user) {
+        const order = memoryStore.orders.find(o => o.code_client && o.code_client.toLowerCase() === clean);
+        if (order && order.email) {
+            user = memoryStore.users.find(u => u.email && u.email.toLowerCase() === order.email.toLowerCase());
+        }
+    }
+    return user || null;
+}
+
+/**
+ * Generate secure password reset token (valid 30 minutes)
+ */
+async function createPasswordResetToken(identifier) {
+    await initDb();
+    if (!identifier) return null;
+    const clean = identifier.trim().toLowerCase();
+    const activePool = getPool();
+
+    const resetToken = crypto.randomBytes(24).toString('hex');
+    const expires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+    let targetEmail = clean;
+    let orderCode = '';
+    let clientName = 'Client';
+
+    if (activePool) {
+        try {
+            // Check if identifier is order code or email
+            const ord = await activePool.query(
+                'SELECT email, code_client, nom_client, has_subscription FROM orders WHERE LOWER(code_client) = $1 OR LOWER(email) = $1 ORDER BY created_at DESC LIMIT 1',
+                [clean]
+            );
+            if (ord.rows.length > 0) {
+                targetEmail = ord.rows[0].email.toLowerCase();
+                orderCode = ord.rows[0].code_client;
+                clientName = ord.rows[0].nom_client || clientName;
+            }
+
+            // Find or create user if needed
+            let uRes = await activePool.query(
+                'SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1',
+                [targetEmail]
+            );
+
+            if (uRes.rows.length === 0 && ord.rows.length > 0) {
+                // Provision user account from existing order
+                const tempHash = await hashPassword(crypto.randomBytes(16).toString('hex'));
+                const hasSub = Boolean(ord.rows[0].has_subscription);
+                await activePool.query(
+                    "INSERT INTO users (username, email, password_hash, role, name, badge, has_subscription) VALUES ($1, $2, $3, 'client', $4, '👤 Client', $5)",
+                    [targetEmail, targetEmail, tempHash, clientName, hasSub]
+                );
+            }
+
+            await activePool.query(
+                'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE LOWER(email) = $3',
+                [resetToken, expires, targetEmail]
+            );
+
+            const updatedUser = await activePool.query('SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1', [targetEmail]);
+            if (updatedUser.rows.length > 0) {
+                return {
+                    success: true,
+                    token: resetToken,
+                    email: targetEmail,
+                    orderCode: orderCode,
+                    name: updatedUser.rows[0].name || clientName,
+                    expires: expires
+                };
+            }
+        } catch(e) {
+            console.error('Postgres error in createPasswordResetToken:', e.message);
+        }
+    }
+
+    // Memory store fallback
+    let memOrder = memoryStore.orders.find(o => (o.code_client && o.code_client.toLowerCase() === clean) || (o.email && o.email.toLowerCase() === clean));
+    if (memOrder) {
+        targetEmail = memOrder.email.toLowerCase();
+        orderCode = memOrder.code_client;
+        clientName = memOrder.nom_client || clientName;
+    }
+
+    let memUser = memoryStore.users.find(u => u.email && u.email.toLowerCase() === targetEmail);
+    if (!memUser && memOrder) {
+        memUser = {
+            id: memoryStore.users.length + 1,
+            username: targetEmail,
+            email: targetEmail,
+            password_hash: '',
+            role: 'client',
+            name: clientName,
+            has_subscription: Boolean(memOrder.has_subscription)
+        };
+        memoryStore.users.push(memUser);
+    }
+
+    if (memUser) {
+        memUser.reset_token = resetToken;
+        memUser.reset_token_expires = expires;
+        return {
+            success: true,
+            token: resetToken,
+            email: targetEmail,
+            orderCode: orderCode,
+            name: memUser.name || clientName,
+            expires: expires
+        };
+    }
+
+    return null;
+}
+
+/**
+ * Reset password using valid reset token
+ */
+async function resetPasswordWithToken(token, newPassword, email) {
+    await initDb();
+    if (!token || !newPassword) return { success: false, error: 'Token et nouveau mot de passe requis' };
+    if (newPassword.length < 6) return { success: false, error: 'Le mot de passe doit comporter au moins 6 caractères.' };
+
+    const cleanToken = token.trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const activePool = getPool();
+    const newHash = await hashPassword(newPassword);
+
+    if (activePool) {
+        try {
+            let q = 'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()';
+            let params = [cleanToken];
+            if (cleanEmail) {
+                q += ' AND LOWER(email) = $2';
+                params.push(cleanEmail);
+            }
+
+            const res = await activePool.query(q, params);
+            if (res.rows.length === 0) {
+                return { success: false, error: 'Lien de réinitialisation invalide ou expiré.' };
+            }
+
+            const user = res.rows[0];
+            await activePool.query(
+                'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+                [newHash, user.id]
+            );
+
+            user.password_hash = newHash;
+            user.reset_token = null;
+            user.reset_token_expires = null;
+            return { success: true, user: user };
+        } catch(e) {
+            console.error('Postgres error in resetPasswordWithToken:', e.message);
+            return { success: false, error: 'Erreur base de données lors de la réinitialisation.' };
+        }
+    }
+
+    // Memory store fallback
+    const now = new Date();
+    const memUser = memoryStore.users.find(u => 
+        u.reset_token === cleanToken && 
+        u.reset_token_expires && 
+        new Date(u.reset_token_expires) > now &&
+        (!cleanEmail || u.email.toLowerCase() === cleanEmail)
+    );
+
+    if (!memUser) {
+        return { success: false, error: 'Lien de réinitialisation invalide ou expiré.' };
+    }
+
+    memUser.password_hash = newHash;
+    memUser.reset_token = null;
+    memUser.reset_token_expires = null;
+    return { success: true, user: memUser };
+}
+
+/**
+ * Direct secure password reset with Order verification (Order code + Email)
+ */
+async function resetPasswordWithOrderVerification({ codeClient, email, newPassword }) {
+    await initDb();
+    if (!codeClient || !email || !newPassword) {
+        return { success: false, error: 'Code commande, email et nouveau mot de passe requis.' };
+    }
+    if (newPassword.length < 6) {
+        return { success: false, error: 'Le mot de passe doit comporter au moins 6 caractères.' };
+    }
+
+    const cleanCode = codeClient.trim().toUpperCase();
+    const cleanEmail = email.trim().toLowerCase();
+    const activePool = getPool();
+    const newHash = await hashPassword(newPassword);
+
+    if (activePool) {
+        try {
+            const ordRes = await activePool.query(
+                'SELECT * FROM orders WHERE UPPER(code_client) = $1 AND LOWER(email) = $2 LIMIT 1',
+                [cleanCode, cleanEmail]
+            );
+
+            if (ordRes.rows.length === 0) {
+                return { success: false, error: 'Aucune commande ne correspond à ce code et cet email.' };
+            }
+
+            const ord = ordRes.rows[0];
+            const hasSub = Boolean(ord.has_subscription);
+
+            // Upsert user
+            await activePool.query(`
+                INSERT INTO users (username, email, password_hash, role, name, badge, has_subscription)
+                VALUES ($1, $2, $3, 'client', $4, '👤 Client', $5)
+                ON CONFLICT (email) DO UPDATE SET 
+                    password_hash = $3,
+                    reset_token = NULL,
+                    reset_token_expires = NULL
+            `, [cleanEmail, cleanEmail, newHash, ord.nom_client || 'Client', hasSub]);
+
+            const userRes = await activePool.query('SELECT * FROM users WHERE LOWER(email) = $1 LIMIT 1', [cleanEmail]);
+            return { success: true, user: userRes.rows[0] };
+        } catch(e) {
+            console.error('Postgres error in resetPasswordWithOrderVerification:', e.message);
+            return { success: false, error: 'Erreur lors de la mise à jour du mot de passe.' };
+        }
+    }
+
+    // Memory fallback
+    const memOrder = memoryStore.orders.find(o => 
+        o.code_client && o.code_client.toUpperCase() === cleanCode && 
+        o.email && o.email.toLowerCase() === cleanEmail
+    );
+
+    if (!memOrder) {
+        return { success: false, error: 'Aucune commande ne correspond à ce code et cet email.' };
+    }
+
+    let memUser = memoryStore.users.find(u => u.email && u.email.toLowerCase() === cleanEmail);
+    if (!memUser) {
+        memUser = {
+            id: memoryStore.users.length + 1,
+            username: cleanEmail,
+            email: cleanEmail,
+            role: 'client',
+            name: memOrder.nom_client || 'Client',
+            has_subscription: Boolean(memOrder.has_subscription)
+        };
+        memoryStore.users.push(memUser);
+    }
+    memUser.password_hash = newHash;
+    memUser.reset_token = null;
+    memUser.reset_token_expires = null;
+    return { success: true, user: memUser };
 }
 
 /**
@@ -850,5 +1120,8 @@ module.exports = {
     confirmOrderReception,
     createSavTicket,
     getAllSavTickets,
-    getHealthStatus
+    getHealthStatus,
+    createPasswordResetToken,
+    resetPasswordWithToken,
+    resetPasswordWithOrderVerification
 };
