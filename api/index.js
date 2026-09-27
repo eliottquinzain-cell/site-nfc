@@ -10,6 +10,7 @@ const {
 
 const db = require('./db');
 const stripeLib = require('./lib/stripe');
+const emailLib = require('./lib/email');
 
 // Cross-Origin Resource Sharing Headers
 const CORS_HEADERS = {
@@ -130,6 +131,92 @@ module.exports = async (req, res) => {
                     badge: user.badge,
                     hasSubscription: hasSub
                 }
+            });
+        }
+
+        // ==========================================
+        // ROUTE: POST /api/auth/forgot-password (action='forgot-password')
+        // ==========================================
+        if (pathname === '/api/auth/forgot-password' || action === 'forgot-password') {
+            const identifier = (body.identifier || body.email || body.username || body.code || '').trim();
+            if (!identifier) {
+                return res.status(400).json({ success: false, error: 'Veuillez saisir votre email pro ou votre code commande (TAP-XXXX).' });
+            }
+
+            const resetInfo = await db.createPasswordResetToken(identifier);
+            if (!resetInfo) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Si un compte est associé à ces informations, vous pouvez réinitialiser votre mot de passe."
+                });
+            }
+
+            // Send password reset email
+            await emailLib.sendPasswordResetEmail({
+                email: resetInfo.email,
+                name: resetInfo.name,
+                resetToken: resetInfo.token,
+                codeClient: resetInfo.orderCode
+            }).catch(err => console.warn('Reset email error:', err));
+
+            return res.status(200).json({
+                success: true,
+                message: "Un lien sécurisé de réinitialisation vous a été envoyé par email.",
+                email: resetInfo.email,
+                token: resetInfo.token,
+                orderCode: resetInfo.orderCode,
+                canResetImmediately: true
+            });
+        }
+
+        // ==========================================
+        // ROUTE: POST /api/auth/reset-password (action='reset-password')
+        // ==========================================
+        if (pathname === '/api/auth/reset-password' || action === 'reset-password') {
+            const token = (body.token || body.resetToken || '').trim();
+            const newPassword = (body.password || body.newPassword || '').trim();
+            const email = (body.email || '').trim().toLowerCase();
+            const codeClient = (body.codeClient || body.code || '').trim().toUpperCase();
+
+            if (!newPassword || newPassword.length < 6) {
+                return res.status(400).json({ success: false, error: 'Le nouveau mot de passe doit comporter au moins 6 caractères.' });
+            }
+
+            let result;
+            if (token) {
+                result = await db.resetPasswordWithToken(token, newPassword, email);
+            } else if (codeClient && email) {
+                result = await db.resetPasswordWithOrderVerification({ codeClient, email, newPassword });
+            } else {
+                return res.status(400).json({ success: false, error: 'Token de réinitialisation ou code de commande requis.' });
+            }
+
+            if (!result.success || !result.user) {
+                return res.status(400).json({ success: false, error: result.error || 'Impossible de réinitialiser le mot de passe.' });
+            }
+
+            const user = result.user;
+            const hasSub = Boolean(user.has_subscription);
+
+            // Create new session JWT and log in user
+            const sessionPayload = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role || 'client',
+                name: user.name,
+                badge: user.badge || '👤 Client',
+                hasSubscription: hasSub
+            };
+            const jwtToken = signJwt(sessionPayload);
+            res.setHeader('Set-Cookie', createSessionCookie(jwtToken));
+
+            return res.status(200).json({
+                success: true,
+                message: 'Mot de passe mis à jour avec succès.',
+                redirect: hasSub ? '/client.html' : `/suivi.html${codeClient ? '?code=' + codeClient : ''}`,
+                hasSubscription: hasSub,
+                token: jwtToken
             });
         }
 
@@ -337,6 +424,8 @@ module.exports = async (req, res) => {
                     message: m.message || ''
                 };
                 order = await db.createOrder(orderData);
+                // Dispatch professional confirmation email
+                emailLib.sendOrderConfirmationEmail(orderData).catch(err => console.warn('[Email] Confirmation send err:', err));
             }
 
             return res.status(200).json({
@@ -372,12 +461,45 @@ module.exports = async (req, res) => {
             };
 
             const created = await db.createOrder(orderData);
+            // Dispatch professional confirmation email
+            emailLib.sendOrderConfirmationEmail(orderData).catch(err => console.warn('[Email] Confirmation send err:', err));
+
             return res.status(200).json({
                 success: true,
                 order: created,
                 codeClient: created.code_client,
                 hasSubscription: created.has_subscription === true
             });
+        }
+
+        // ==========================================
+        // ROUTE: ADMIN RESEND CONFIRMATION EMAIL
+        // ==========================================
+        if (pathname === '/api/admin/orders/resend-confirmation' || action === 'admin-resend-confirmation') {
+            let user = getSessionUser(req);
+            if (!user && body.adminToken) user = verifyJwt(body.adminToken);
+            if (!user || user.role !== 'admin') {
+                return res.status(403).json({ success: false, error: 'Accès refusé. Rôle administrateur requis.' });
+            }
+
+            const recordId = body.recordId || body.orderId || body.codeClient;
+            const tracking = await db.findPublicTracking(recordId);
+            if (!tracking) {
+                return res.status(404).json({ success: false, error: 'Commande introuvable.' });
+            }
+
+            const sendRes = await emailLib.sendOrderConfirmationEmail({
+                email: tracking.email || body.email,
+                nom: tracking.name,
+                entreprise: tracking.business,
+                codeClient: tracking.codeClient,
+                formule: tracking.formule,
+                prix: tracking.prix,
+                hasSubscription: tracking.hasSubscription,
+                adresse: tracking.adresse || 'Adresse de livraison'
+            });
+
+            return res.status(200).json({ success: true, message: 'Email de confirmation renvoyé avec succès.', sendRes });
         }
 
         // ==========================================
