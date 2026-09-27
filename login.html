@@ -216,18 +216,25 @@
 
         <div id="activeUserBox" style="display:none;background:#181818;border:1px solid #2a2a2a;border-radius:10px;padding:10px 14px;font-size:.82rem;color:#d1d5db;margin-bottom:16px;text-align:center;"></div>
 
+        <!-- 1. LOGIN FORM -->
         <form id="loginForm" onsubmit="return handleLogin(event)">
             <div class="form-group">
-                <label class="form-label" for="username">Identifiant ou Email pro</label>
+                <label class="form-label" for="username">Identifiant, Email pro ou Réf. Commande</label>
                 <div class="input-wrapper">
-                    <input type="text" id="username" class="form-input" placeholder="Votre identifiant" required autocomplete="username" autofocus>
+                    <input type="text" id="username" class="form-input" placeholder="contact@domaine.fr ou TAP-9901" required autocomplete="username" autofocus>
+                </div>
+                <div style="font-size:.73rem;color:var(--text-muted);margin-top:5px;line-height:1.4;">
+                    💡 Client : vous pouvez saisir soit votre <strong>email</strong>, soit votre <strong>numéro TAP-XXXX</strong>.
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="password">Mot de passe</label>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <label class="form-label" for="password" style="margin-bottom:0;">Mot de passe</label>
+                    <a href="#" onclick="openForgotPassword(event)" style="font-size:0.77rem;color:#38bdf8;text-decoration:none;">Mot de passe oublié ?</a>
+                </div>
                 <div class="input-wrapper">
-                    <input type="password" id="password" class="form-input" placeholder="Mot de passe sécurisé" required autocomplete="current-password">
+                    <input type="password" id="password" class="form-input" placeholder="Mot de passe défini lors de la commande" required autocomplete="current-password">
                     <button type="button" class="toggle-pwd" onclick="togglePasswordVisibility()" title="Afficher/Masquer">👁️</button>
                 </div>
             </div>
@@ -240,13 +247,72 @@
             <div class="error-msg" id="errorMsg"></div>
         </form>
 
+        <!-- 2. FORGOT PASSWORD VIEW -->
+        <div id="forgotPasswordView" style="display:none;">
+            <div style="text-align:center;margin-bottom:18px;">
+                <div style="display:inline-flex;padding:8px;background:rgba(56,189,248,.12);border-radius:12px;color:#38bdf8;font-size:1.4rem;margin-bottom:8px;">🔑</div>
+                <h3 style="font-size:1.15rem;font-weight:700;color:#fff;">Mot de passe oublié</h3>
+                <p style="font-size:.82rem;color:var(--text-light);margin-top:4px;line-height:1.45;">
+                    Saisissez votre <strong>email pro</strong> ou votre <strong>numéro de commande TAP-XXXX</strong> pour sécuriser et réinitialiser votre accès.
+                </p>
+            </div>
+
+            <form id="forgotForm" onsubmit="return handleForgotPassword(event)">
+                <div class="form-group">
+                    <label class="form-label" for="forgotIdentifier">Email ou Référence commande</label>
+                    <input type="text" id="forgotIdentifier" class="form-input" placeholder="Ex. : contact@domaine.fr ou TAP-9901" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="forgotSubmitBtn" style="background:#38bdf8;color:#050505;">
+                    <span>Vérifier mon compte ➔</span>
+                </button>
+
+                <div id="forgotSuccessMsg" style="display:none;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80;padding:12px;border-radius:8px;font-size:.82rem;margin-top:14px;line-height:1.45;"></div>
+                <div class="error-msg" id="forgotErrorMsg"></div>
+            </form>
+
+            <!-- 3. RESET PASSWORD FORM (s'affiche après identification) -->
+            <form id="resetForm" style="display:none;margin-top:16px;" onsubmit="return handleResetPassword(event)">
+                <div style="background:#181818;border:1px solid #2a2a2a;border-radius:10px;padding:12px;margin-bottom:14px;">
+                    <div style="font-size:.74rem;color:#38bdf8;font-weight:700;text-transform:uppercase;">Compte client identifié</div>
+                    <div id="resetAccountInfo" style="font-size:.84rem;color:#f3f4f6;margin-top:3px;font-weight:600;"></div>
+                </div>
+
+                <input type="hidden" id="resetToken">
+                <input type="hidden" id="resetEmail">
+                <input type="hidden" id="resetOrderCode">
+
+                <div class="form-group">
+                    <label class="form-label" for="newPassword">Nouveau mot de passe</label>
+                    <input type="password" id="newPassword" class="form-input" placeholder="Au moins 6 caractères" minlength="6" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirmer le nouveau mot de passe</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Retapez votre mot de passe" minlength="6" required>
+                </div>
+
+                <button type="submit" class="btn-submit" id="resetSubmitBtn">
+                    <span>Enregistrer & Accéder à mon Espace ➔</span>
+                </button>
+
+                <div class="error-msg" id="resetErrorMsg"></div>
+            </form>
+
+            <div style="text-align:center;margin-top:18px;">
+                <a href="#" onclick="closeForgotPassword(event)" style="font-size:.82rem;color:var(--text-light);text-decoration:none;">
+                    ← Retour à la connexion
+                </a>
+            </div>
+        </div>
+
         <div class="footer-links">
             <a href="/">← Retour au site TapTapNFC</a>
         </div>
     </div>
 
     <script>
-        // Check URL parameters for redirection notices
+        // Check URL parameters for redirection notices and reset tokens
         window.addEventListener('DOMContentLoaded', async function() {
             var params = new URLSearchParams(window.location.search);
             var notice = document.getElementById('bannerNotice');
@@ -260,16 +326,29 @@
             } else if (params.get('auth') === 'required') {
                 notice.style.display = 'flex';
                 icon.textContent = '🔒';
-                text.textContent = 'Authentification requise pour accéder à la console.';
+                text.textContent = 'Authentification requide pour accéder à cette page.';
             } else if (params.get('error') === 'forbidden') {
                 notice.className = 'banner-notice danger';
                 notice.style.display = 'flex';
                 icon.textContent = '🚫';
-                text.innerHTML = 'Accès réservé aux administrateurs. Connectez-vous avec vos identifiants admin ou <a href="/api/auth/logout" style="color:#fff;text-decoration:underline;font-weight:700;">cliquez ici pour vous déconnecter</a>.';
+                text.innerHTML = 'Accès réservé. Connectez-vous avec le compte associé ou <a href="/api/auth/logout" style="color:#fff;text-decoration:underline;font-weight:700;">déconnectez-vous</a>.';
             } else if (params.get('error') === 'expired') {
                 notice.style.display = 'flex';
                 icon.textContent = '⏳';
                 text.textContent = 'Votre session a expiré. Veuillez vous reconnecter.';
+            }
+
+            // Detect reset token in URL (e.g. from password reset email link)
+            var urlToken = params.get('reset_token');
+            var urlEmail = params.get('email');
+            if (urlToken) {
+                openForgotPassword();
+                document.getElementById('forgotForm').style.display = 'none';
+                document.getElementById('resetForm').style.display = 'block';
+                document.getElementById('resetToken').value = urlToken;
+                document.getElementById('resetEmail').value = urlEmail || '';
+                document.getElementById('resetAccountInfo').textContent = urlEmail ? urlEmail : 'Lien sécurisé validé';
+                document.getElementById('newPassword').focus();
             }
 
             // Check if user has an active session
@@ -290,6 +369,137 @@
         function togglePasswordVisibility() {
             var input = document.getElementById('password');
             input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function openForgotPassword(e) {
+            if (e) e.preventDefault();
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotPasswordView').style.display = 'block';
+            document.getElementById('bannerNotice').style.display = 'none';
+            document.getElementById('forgotErrorMsg').style.display = 'none';
+            document.getElementById('forgotSuccessMsg').style.display = 'none';
+            document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('forgotForm').style.display = 'block';
+            document.getElementById('forgotIdentifier').focus();
+        }
+
+        function closeForgotPassword(e) {
+            if (e) e.preventDefault();
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('forgotPasswordView').style.display = 'none';
+        }
+
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            var idInput = document.getElementById('forgotIdentifier').value.trim();
+            var btn = document.getElementById('forgotSubmitBtn');
+            var err = document.getElementById('forgotErrorMsg');
+            var successBox = document.getElementById('forgotSuccessMsg');
+            var resetForm = document.getElementById('resetForm');
+
+            if (!idInput) return false;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Vérification...</span>';
+            err.style.display = 'none';
+            successBox.style.display = 'none';
+
+            try {
+                var res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: idInput })
+                });
+
+                var data = await res.json().catch(function(){ return {}; });
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Erreur lors de la vérification.');
+                }
+
+                if (data.canResetImmediately && (data.token || data.orderCode)) {
+                    successBox.innerHTML = '✓ Compte identifié pour <strong>' + (data.email || idInput) + '</strong>.<br>Définissez votre nouveau mot de passe ci-dessous :';
+                    successBox.style.display = 'block';
+
+                    document.getElementById('forgotForm').style.display = 'none';
+                    resetForm.style.display = 'block';
+
+                    document.getElementById('resetToken').value = data.token || '';
+                    document.getElementById('resetEmail').value = data.email || '';
+                    document.getElementById('resetOrderCode').value = data.orderCode || '';
+                    document.getElementById('resetAccountInfo').textContent = (data.email || '') + (data.orderCode ? ' (Réf : ' + data.orderCode + ')' : '');
+                    document.getElementById('newPassword').focus();
+                } else {
+                    successBox.innerHTML = '✓ ' + (data.message || 'Un email de réinitialisation sécurisé vient d\'être envoyé.');
+                    successBox.style.display = 'block';
+                }
+            } catch(error) {
+                err.textContent = error.message || 'Identifiant introuvable.';
+                err.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Vérifier mon compte ➔</span>';
+            }
+            return false;
+        }
+
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            var newPwd = document.getElementById('newPassword').value;
+            var confirmPwd = document.getElementById('confirmPassword').value;
+            var token = document.getElementById('resetToken').value;
+            var email = document.getElementById('resetEmail').value;
+            var orderCode = document.getElementById('resetOrderCode').value;
+            var btn = document.getElementById('resetSubmitBtn');
+            var err = document.getElementById('resetErrorMsg');
+
+            if (!newPwd || newPwd.length < 6) {
+                err.textContent = 'Le mot de passe doit comporter au moins 6 caractères.';
+                err.style.display = 'block';
+                return false;
+            }
+
+            if (newPwd !== confirmPwd) {
+                err.textContent = 'Les deux mots de passe ne correspondent pas.';
+                err.style.display = 'block';
+                return false;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Enregistrement sécurisé...</span>';
+            err.style.display = 'none';
+
+            try {
+                var res = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        token: token,
+                        email: email,
+                        codeClient: orderCode,
+                        newPassword: newPwd
+                    })
+                });
+
+                var data = await res.json().catch(function(){ return {}; });
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Impossible de mettre à jour le mot de passe.');
+                }
+
+                btn.innerHTML = '<span>✓ Mot de passe enregistré ! Redirection...</span>';
+                setTimeout(function() {
+                    window.location.href = data.redirect || '/client.html';
+                }, 800);
+
+            } catch(error) {
+                err.textContent = error.message || 'Erreur lors de la mise à jour.';
+                err.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<span>Enregistrer & Accéder à mon Espace ➔</span>';
+            }
+            return false;
         }
 
         async function handleLogin(e) {
@@ -329,6 +539,12 @@
                             user: data.user
                         }));
                     } catch(e){}
+                }
+
+                // If client without subscription, redirect to tracking page
+                if (data.user && data.user.role === 'client' && !data.hasSubscription) {
+                    window.location.href = data.redirect || '/suivi.html';
+                    return false;
                 }
 
                 // Check for redirect param in current URL
