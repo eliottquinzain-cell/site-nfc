@@ -817,17 +817,27 @@
                 </div>
             </div>
 
+            <!-- Stripe Test Mode Notice -->
+            <div style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.35);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
+                <span style="font-size:1.15rem;line-height:1;">💳</span>
+                <div style="font-size:.78rem;line-height:1.45;color:#e0e7ff;">
+                    <strong style="color:#a5b4fc;display:block;margin-bottom:2px;">Paiement sécurisé en Mode Test (Stripe)</strong>
+                    Vous allez être redirigé vers la page sécurisée officielle Stripe. Utilisez la carte test <code style="background:rgba(255,255,255,.15);padding:1px 5px;border-radius:4px;color:#fff;font-weight:bold;letter-spacing:.05em;">4242 4242 4242 4242</code> (date future et 3 chiffres CVC) pour tester sans aucun débit réel.
+                </div>
+            </div>
+
             <button type="submit" class="btn-submit" id="orderSubmitBtn">
-                <span id="orderSubmitText">Confirmer ma commande</span>
+                <span id="orderSubmitText">💳 Payer par Carte Bancaire (Test Stripe) ➔</span>
                 <span id="orderSubmitSpinner" class="btn-spinner" style="display:none;"></span>
             </button>
             
             <div class="trust-badge-row">
-                <span>🔒 Transmission sécurisée</span>
-                <span>🤝 Paiement sécurisé à réception</span>
+                <span>🔒 Sécurisé par Stripe</span>
+                <span>💳 Cartes bancaires & Apple Pay</span>
+                <span>🧪 Simulation sans débit réel</span>
             </div>
             
-            <p id="orderErrorMsg" style="display:none;color:#f43f5e;font-size:.82rem;text-align:center;background:rgba(244,63,94,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(244,63,94,.2);"></p>
+            <p id="orderErrorMsg" style="display:none;color:#f43f5e;font-size:.82rem;text-align:center;background:rgba(244,63,94,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(244,63,94,.2);margin-top:10px;"></p>
         </form>
 
         <!-- 3. ORDER SUCCESS -->
@@ -1375,21 +1385,32 @@ async function submitOrder(e){
     e.preventDefault();
     var btn = document.getElementById('orderSubmitBtn'),
         btnText = document.getElementById('orderSubmitText'),
-        btnSpinner = document.getElementById('orderSubmitSpinner');
+        btnSpinner = document.getElementById('orderSubmitSpinner'),
+        errEl = document.getElementById('orderErrorMsg');
 
-    var b = document.getElementById('orderBusiness').value,
-        n = document.getElementById('orderName').value,
-        m = document.getElementById('orderEmail').value,
-        p = document.getElementById('orderPhone').value,
+    if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+
+    var b = (document.getElementById('orderBusiness').value || '').trim(),
+        n = (document.getElementById('orderName').value || '').trim(),
+        m = (document.getElementById('orderEmail').value || '').trim().toLowerCase(),
+        p = (document.getElementById('orderPhone').value || '').trim(),
         pwd = document.getElementById('orderPassword') ? document.getElementById('orderPassword').value : '',
-        a = document.getElementById('orderAddress').value,
-        k = document.getElementById('orderLink').value,
-        g = document.getElementById('orderMessage').value,
+        a = (document.getElementById('orderAddress').value || '').trim(),
+        k = document.getElementById('orderLink') ? document.getElementById('orderLink').value.trim() : '',
+        g = document.getElementById('orderMessage') ? document.getElementById('orderMessage').value.trim() : '',
         typeCommerce = document.getElementById('orderBusinessType') ? document.getElementById('orderBusinessType').value : 'commerce',
         subEl = document.getElementById('orderSubscription'),
         hasSub = subEl ? subEl.checked : false,
         menuLinkEl = document.getElementById('orderMenuLink'),
-        menuLink = menuLinkEl ? menuLinkEl.value : '';
+        menuLink = menuLinkEl ? menuLinkEl.value.trim() : '';
+
+    if (hasSub && (!pwd || pwd.length < 6)) {
+        if (errEl) {
+            errEl.textContent = 'Veuillez saisir un mot de passe d\'au moins 6 caractères pour sécuriser votre Espace Client Pro.';
+            errEl.style.display = 'block';
+        }
+        return false;
+    }
 
     var typeAction = 'avis_google';
     if (typeCommerce === 'restaurant') {
@@ -1402,18 +1423,14 @@ async function submitOrder(e){
     var codeClient = 'TAP-' + Math.floor(1000 + Math.random() * 9000);
 
     if (btn) { btn.disabled = true; }
-    if (btnText) { btnText.textContent = 'Validation en cours...'; }
+    if (btnText) { btnText.textContent = 'Redirection vers Stripe...'; }
     if (btnSpinner) { btnSpinner.style.display = 'inline-block'; }
 
     var formule = CART.length ? CART[0].label : 'Formule NFC';
-    if (hasSub) {
-        formule += ' + Espace Pro (10€/m)';
-    } else {
-        formule += ' (Achat unique)';
-    }
     var total = cartTotal();
 
     var payload = {
+        cart: CART,
         type: 'Commande',
         date: new Date().toISOString(),
         formule: formule,
@@ -1431,71 +1448,134 @@ async function submitOrder(e){
         typeCommerce: typeCommerce,
         typeAction: typeAction,
         hasSubscription: hasSub,
-        message: g || '',
-        statut: 'Nouvelle'
+        message: g || ''
     };
 
-    // 1. Direct PostgreSQL storage
     try {
-        await fetch('/api/order/create', {
+        var resp = await fetch('/api/stripe/create-checkout-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-    } catch(err) {
-        console.warn('Backend order storage:', err);
+
+        var data = await resp.json();
+
+        if (!resp.ok || !data.success || !data.url) {
+            throw new Error(data.error || 'Erreur lors de la création de la session Stripe.');
+        }
+
+        // Redirect to official Stripe Checkout page
+        window.location.href = data.url;
+        return false;
+    } catch (err) {
+        console.error('Erreur Stripe Checkout:', err);
+        if (btn) { btn.disabled = false; }
+        if (btnText) { btnText.textContent = '💳 Payer par Carte Bancaire (Test Stripe) ➔'; }
+        if (btnSpinner) { btnSpinner.style.display = 'none'; }
+        if (errEl) {
+            errEl.textContent = 'Erreur de connexion avec Stripe : ' + (err.message || 'Veuillez réessayer.');
+            errEl.style.display = 'block';
+        }
+        return false;
     }
+}
 
-    // 2. Webhook notification
-    await sendToWebhook(payload);
+async function checkStripePaymentReturn() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var sessionId = urlParams.get('session_id');
+    if (!sessionId) return;
 
-    try {
-        localStorage.setItem('nfc_client_auth', JSON.stringify({ 
-            email: m, 
-            code: codeClient, 
-            name: n, 
-            business: b,
-            hasSubscription: hasSub
-        }));
-    } catch(e){}
-
-    if (btn) { btn.disabled = false; }
-    if (btnText) { btnText.textContent = 'Confirmer ma commande'; }
-    if (btnSpinner) { btnSpinner.style.display = 'none'; }
+    if (cartOverlay) cartOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (cartView) cartView.style.display = 'none';
+    if (checkoutView) checkoutView.style.display = 'none';
+    if (orderSuccess) orderSuccess.classList.add('show');
+    if (cartHeaderText) cartHeaderText.textContent = 'Vérification du paiement...';
+    if (cartHeaderIcon) cartHeaderIcon.textContent = '⏳';
 
     var subElHtml = document.getElementById('orderSuccessSubtitle');
-    if (hasSub) {
-        subElHtml.innerHTML = 'Merci ' + n + ' ! Votre commande pour « ' + b + ' » (' + formule + ') a bien été transmise.<br><br>' +
-        '<div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;margin-top:8px;text-align:left;">' +
-            '<div style="font-size:.76rem;color:#38bdf8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;">✓ Espace Client Pro Activé</div>' +
-            '<div style="font-size:.84rem;color:#f3f4f6;margin-top:4px;">Numéro de commande : <strong style="color:#38bdf8;font-family:monospace;">' + codeClient + '</strong></div>' +
-            '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Identifiant : ' + m + '</div>' +
-            '<div style="font-size:.78rem;color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:6px;padding:8px 10px;margin-top:10px;">✉️ Un e-mail de confirmation avec vos identifiants vient d\'être envoyé à <strong>' + m + '</strong>.</div>' +
-            '<a href="/client.html" class="btn btn-primary" style="margin-top:12px;width:100%;justify-content:center;font-size:.84rem;padding:9px 14px;">Accéder à mon Espace Client Pro ➔</a>' +
-        '</div>';
-    } else {
-        subElHtml.innerHTML = 'Merci ' + n + ' ! Votre commande pour « ' + b + ' » (' + formule + ') a bien été enregistrée.<br><br>' +
-        '<div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;margin-top:8px;text-align:left;">' +
-            '<div style="font-size:.76rem;color:#22c55e;font-weight:700;letter-spacing:.04em;text-transform:uppercase;">✓ Fabrication & Gravure en cours</div>' +
-            '<div style="font-size:.84rem;color:#f3f4f6;margin-top:4px;">Votre numéro de suivi : <strong style="color:#38bdf8;font-family:monospace;">' + codeClient + '</strong></div>' +
-            '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Vos cartes sont en cours de programmation dans notre atelier avec votre lien fixe.</div>' +
-            '<div style="font-size:.78rem;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 10px;margin-top:10px;">📦 Suivez l\'avancement de votre carte en direct sur notre outil transparent sans compte.</div>' +
-            '<a href="/suivi.html?code=' + encodeURIComponent(codeClient) + '" class="btn btn-primary" style="background:#38bdf8;color:#000;border:none;margin-top:12px;width:100%;justify-content:center;font-size:.84rem;padding:9px 14px;">📦 Suivre l\'état de ma carte ➔</a>' +
+    if (subElHtml) {
+        subElHtml.innerHTML = '<div style="text-align:center;padding:24px 0;">' +
+            '<div class="btn-spinner" style="display:inline-block;width:32px;height:32px;border-width:3px;border-top-color:#38bdf8;margin-bottom:12px;"></div>' +
+            '<p style="color:#d1d5db;font-size:.9rem;">Vérification de votre paiement Stripe en cours...</p>' +
         '</div>';
     }
 
-    checkoutView.style.display = 'none';
-    orderSuccess.classList.add('show');
-    if (cartHeaderText) cartHeaderText.textContent = 'Confirmation';
-    if (cartHeaderIcon) cartHeaderIcon.textContent = '✅';
+    try {
+        var resp = await fetch('/api/stripe/verify-session?session_id=' + encodeURIComponent(sessionId));
+        var data = await resp.json();
 
-    CART = [];
-    saveCart();
-    renderCart();
-    return false;
+        if (data.success && data.paid) {
+            var order = data.order || {};
+            var codeClient = data.codeClient || order.code_client || urlParams.get('order_code') || 'TAP-0000';
+            var customerEmail = data.customerEmail || order.email || '';
+            var customerName = order.nom_client || 'Client';
+            var business = order.entreprise || 'Votre Établissement';
+            var hasSub = data.hasSubscription === true || order.has_subscription === true;
+            var formule = order.formule || 'Pack NFC';
+
+            if (cartHeaderText) cartHeaderText.textContent = 'Paiement confirmé !';
+            if (cartHeaderIcon) cartHeaderIcon.textContent = '✅';
+
+            var detailsHtml = '<div style="background:#141414;border:1px solid #222;border-radius:10px;padding:14px;margin-top:8px;text-align:left;">' +
+                '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">' +
+                    '<span style="background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:50px;">💳 Paiement validé (Test Stripe)</span>' +
+                    '<span style="font-size:.78rem;color:#9ca3af;font-family:monospace;">ID: ' + sessionId.slice(0, 16) + '...</span>' +
+                '</div>' +
+                '<div style="font-size:.84rem;color:#f3f4f6;margin-top:4px;">Numéro de commande : <strong style="color:#38bdf8;font-family:monospace;">' + codeClient + '</strong></div>' +
+                '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Établissement : ' + business + ' (' + formule + ')</div>';
+
+            if (hasSub) {
+                detailsHtml += '<div style="font-size:.76rem;color:#38bdf8;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:12px;">✓ Espace Client Pro Débloqué (10€/mois)</div>' +
+                '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Identifiant : ' + customerEmail + '</div>' +
+                '<div style="font-size:.78rem;color:#38bdf8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);border-radius:6px;padding:8px 10px;margin-top:10px;">✉️ Vos accès et redirections dynamiques sont opérationnels. Vous pouvez vous connecter à votre Espace Pro dès maintenant.</div>' +
+                '<a href="/client.html" class="btn btn-primary" style="margin-top:12px;width:100%;justify-content:center;font-size:.84rem;padding:9px 14px;">Accéder à mon Espace Client Pro ➔</a>';
+            } else {
+                detailsHtml += '<div style="font-size:.76rem;color:#22c55e;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-top:12px;">✓ Fabrication & Gravure lancées</div>' +
+                '<div style="font-size:.8rem;color:#9ca3af;margin-top:2px;">Vos cartes sont en cours de programmation dans notre atelier avec votre lien fixe.</div>' +
+                '<div style="font-size:.78rem;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 10px;margin-top:10px;">📦 Suivez l\'avancement de votre carte en direct sur notre outil transparent sans compte.</div>' +
+                '<a href="/suivi.html?code=' + encodeURIComponent(codeClient) + '" class="btn btn-primary" style="background:#38bdf8;color:#000;border:none;margin-top:12px;width:100%;justify-content:center;font-size:.84rem;padding:9px 14px;">📦 Suivre l\'état de ma carte ➔</a>';
+            }
+            detailsHtml += '</div>';
+
+            if (subElHtml) {
+                subElHtml.innerHTML = 'Merci ' + customerName + ' ! Votre commande et paiement test ont été validés avec succès.<br><br>' + detailsHtml;
+            }
+
+            try {
+                localStorage.setItem('nfc_client_auth', JSON.stringify({ 
+                    email: customerEmail, 
+                    code: codeClient, 
+                    name: customerName, 
+                    business: business,
+                    hasSubscription: hasSub
+                }));
+            } catch(e){}
+
+            CART = [];
+            saveCart();
+            renderCart();
+
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        } else {
+            if (cartHeaderText) cartHeaderText.textContent = 'Paiement non finalisé';
+            if (cartHeaderIcon) cartHeaderIcon.textContent = '⚠️';
+            if (subElHtml) {
+                subElHtml.innerHTML = '<div style="color:#f43f5e;padding:12px;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);border-radius:8px;text-align:left;">' +
+                    '<strong>Paiement non confirmé :</strong> ' + (data.error || 'La transaction n\'a pas abouti ou a été annulée.') + '<br><br>' +
+                    '<button class="btn btn-outline" onclick="openCart();goCheckout();" style="margin-top:8px;font-size:.8rem;padding:7px 12px;">Réessayer le paiement</button>' +
+                '</div>';
+            }
+        }
+    } catch (err) {
+        console.error('Erreur vérification Stripe:', err);
+    }
 }
 
 renderCart();
+checkStripePaymentReturn();
 document.getElementById('menuToggle').addEventListener('click',function(){this.classList.toggle('active');document.getElementById('navLinks').classList.toggle('open');});
 document.querySelectorAll('#navLinks a').forEach(function(l){l.addEventListener('click',function(){document.getElementById('menuToggle').classList.remove('active');document.getElementById('navLinks').classList.remove('open');});});
 document.querySelectorAll('.faq-question').forEach(function(b){b.addEventListener('click',function(){var p=this.parentElement,o=p.classList.contains('open');document.querySelectorAll('.faq-item.open').forEach(function(e){e.classList.remove('open');});if(!o)p.classList.add('open');});});
