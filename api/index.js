@@ -9,6 +9,7 @@ const {
 } = require('./lib/auth');
 
 const db = require('./db');
+const stripeLib = require('./lib/stripe');
 
 // Cross-Origin Resource Sharing Headers
 const CORS_HEADERS = {
@@ -257,6 +258,95 @@ module.exports = async (req, res) => {
 
             const deleted = await db.deleteOrder(recordId);
             return res.status(200).json({ success: true, deletedOrder: deleted });
+        }
+
+        // ==========================================
+        // ROUTE: STRIPE CONFIG
+        // ==========================================
+        if (pathname === '/api/stripe/config' || action === 'stripe-config') {
+            return res.status(200).json({
+                success: true,
+                publishableKey: stripeLib.STRIPE_PUBLISHABLE_KEY
+            });
+        }
+
+        // ==========================================
+        // ROUTE: STRIPE CREATE CHECKOUT SESSION
+        // ==========================================
+        if (pathname === '/api/stripe/create-checkout-session' || pathname === '/api/stripe/checkout' || action === 'stripe-create-checkout') {
+            const proto = req.headers['x-forwarded-proto'] || 'https';
+            const host = req.headers.host || 'taptapnfc.vercel.app';
+            const origin = `${proto}://${host}`;
+
+            const session = await stripeLib.createCheckoutSession(body, origin);
+            return res.status(200).json({
+                success: true,
+                sessionId: session.id,
+                url: session.url,
+                codeClient: session.codeClient
+            });
+        }
+
+        // ==========================================
+        // ROUTE: STRIPE VERIFY CHECKOUT SESSION
+        // ==========================================
+        if (pathname === '/api/stripe/verify-session' || pathname === '/api/stripe/verify' || action === 'stripe-verify-session') {
+            const sessionId = url.searchParams.get('session_id') || body.sessionId || body.session_id;
+            if (!sessionId) {
+                return res.status(400).json({ success: false, error: 'Identifiant de session manquant.' });
+            }
+
+            const session = await stripeLib.retrieveCheckoutSession(sessionId);
+            const isPaid = session.payment_status === 'paid' || session.status === 'complete';
+
+            if (!isPaid) {
+                return res.status(200).json({
+                    success: false,
+                    paid: false,
+                    status: session.payment_status,
+                    error: 'Paiement non finalisé.'
+                });
+            }
+
+            const m = session.metadata || {};
+            const codeClient = m.codeClient || ('TAP-' + Math.floor(1000 + Math.random() * 9000));
+            const hasSub = m.hasSubscription === 'true';
+
+            // Check if order already recorded in database
+            let order = await db.findPublicTracking(codeClient);
+
+            if (!order) {
+                const customerEmail = m.email || (session.customer_details ? session.customer_details.email : '');
+                const orderData = {
+                    entreprise: m.business || 'Commerce',
+                    nom: m.nom || (session.customer_details ? session.customer_details.name : '') || '',
+                    email: customerEmail,
+                    telephone: m.telephone || (session.customer_details ? session.customer_details.phone : '') || '',
+                    motDePasse: m.password || '',
+                    codeClient: codeClient,
+                    adresse: m.adresse || '',
+                    lienGoogle: m.lienGoogle || '',
+                    lienMenu: m.lienMenu || '',
+                    typeCommerce: m.typeCommerce || 'commerce',
+                    typeAction: m.typeAction || 'avis_google',
+                    hasSubscription: hasSub,
+                    formule: m.formule || 'Pack 2 cartes NFC',
+                    prix: m.prix || (session.amount_total ? (session.amount_total / 100).toFixed(2) : '70'),
+                    statut: 'Payée (Test Stripe)',
+                    notes: `Paiement Stripe Test validé (${session.id})`,
+                    message: m.message || ''
+                };
+                order = await db.createOrder(orderData);
+            }
+
+            return res.status(200).json({
+                success: true,
+                paid: true,
+                order: order,
+                codeClient: codeClient,
+                hasSubscription: hasSub,
+                customerEmail: m.email || (session.customer_details ? session.customer_details.email : '')
+            });
         }
 
         // ==========================================
