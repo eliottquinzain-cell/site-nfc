@@ -482,21 +482,21 @@ module.exports = async (req, res) => {
                 return res.status(403).json({ success: false, error: 'Accès refusé. Rôle administrateur requis.' });
             }
 
-            const recordId = body.recordId || body.orderId || body.codeClient;
-            const tracking = await db.findPublicTracking(recordId);
-            if (!tracking) {
+            const recordId = (body.recordId || body.orderId || body.codeClient || '').trim();
+            const order = await db.findOrderForClient('', recordId);
+            if (!order) {
                 return res.status(404).json({ success: false, error: 'Commande introuvable.' });
             }
 
             const sendRes = await emailLib.sendOrderConfirmationEmail({
-                email: tracking.email || body.email,
-                nom: tracking.name,
-                entreprise: tracking.business,
-                codeClient: tracking.codeClient,
-                formule: tracking.formule,
-                prix: tracking.prix,
-                hasSubscription: tracking.hasSubscription,
-                adresse: tracking.adresse || 'Adresse de livraison'
+                email: order.email || body.email,
+                nom: order.nom_client,
+                entreprise: order.entreprise,
+                codeClient: order.code_client,
+                formule: order.formule,
+                prix: order.prix,
+                hasSubscription: Boolean(order.has_subscription),
+                adresse: order.adresse || 'Adresse de livraison'
             });
 
             return res.status(200).json({ success: true, message: 'Email de confirmation renvoyé avec succès.', sendRes });
