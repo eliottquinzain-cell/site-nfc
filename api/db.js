@@ -677,8 +677,8 @@ async function createOrder(data) {
                 ) VALUES (
                     $1, $2, $3, $4, $5,
                     $6, $7, $8, $9, $10,
-                    $11, $12, $13, 'Nouvelle', '1. Prise en charge',
-                    $14, $15, $16
+                    $11, $12, $13, $14, $15,
+                    $16, $17, $18
                 ) RETURNING *
             `, [
                 codeClient,
@@ -694,8 +694,10 @@ async function createOrder(data) {
                 hasSubscription,
                 data.formule || 'Pack 2 cartes NFC',
                 prix,
-                typeCommerce === 'restaurant' ? 'Configuration Menu en ligne & Avis' : 'Configuration initiale offerte',
-                'Sous 48h ouvrées',
+                data.statut || 'Nouvelle',
+                data.etape || '1. Prise en charge',
+                data.notes_configuration || data.notes || (typeCommerce === 'restaurant' ? 'Configuration Menu en ligne & Avis' : 'Configuration initiale offerte'),
+                data.date_livraison_prevue || 'Sous 48h ouvrées',
                 data.message || data.message_client || ''
             ]);
 
@@ -741,9 +743,9 @@ async function createOrder(data) {
             has_subscription: hasSubscription,
             formule: data.formule || 'Pack 2 cartes NFC',
             prix: prix,
-            statut: 'Nouvelle',
-            etape: '1. Prise en charge',
-            notes_configuration: 'Configuration en cours',
+            statut: data.statut || 'Nouvelle',
+            etape: data.etape || '1. Prise en charge',
+            notes_configuration: data.notes_configuration || data.notes || 'Configuration en cours',
             date_livraison_prevue: 'Sous 48h ouvrées',
             reception_client: false,
             message_client: data.message || '',
