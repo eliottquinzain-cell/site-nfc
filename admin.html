@@ -955,6 +955,32 @@
             } catch(err) {
                 alert('Erreur réseau.');
             }
+        async function resendConfirmationEmail(recordId, codeClient) {
+            var sess = getAdminSession();
+            var token = sess ? sess.token : null;
+            if (!confirm('Renvoyer l\'email officiel de confirmation au client pour la commande ' + (codeClient || recordId) + ' ?')) {
+                return;
+            }
+            try {
+                var res = await fetch('/api/admin/orders/resend-confirmation', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recordId: recordId,
+                        codeClient: codeClient,
+                        adminToken: token
+                    })
+                });
+                var data = await res.json();
+                if (data.success) {
+                    alert('✓ Email de confirmation renvoyé avec succès au client !');
+                } else {
+                    alert('Erreur : ' + (data.error || 'Impossible de renvoyer l\'email.'));
+                }
+            } catch(e) {
+                alert('Erreur réseau lors de l\'envoi.');
+            }
         }
 
         async function deleteOrderPrompt(recordId, company, codeClient) {
@@ -1137,6 +1163,7 @@
                                 '<button class="btn-action" style="background:#262626;color:#fff;border-color:#444;" onclick="openCustomizeModal(\'' + o.id + '\')">⚙️ Configurer / Modifier</button>' +
                                 '<a href="tel:' + escapeHtml(f.Telephone) + '" class="btn-action">📞 Appeler</a>' +
                                 '<a href="mailto:' + escapeHtml(f.Email) + '" class="btn-action">✉️ Email</a>' +
+                                '<button class="btn-action" style="background:#132a1c;color:#4ade80;border-color:#22c55e;" onclick="resendConfirmationEmail(\'' + o.id + '\', \'' + escapeHtml(f['Code Client'] || '') + '\')" title="Renvoyer l\'email officiel de confirmation au client">📩 Renvoyer confirmation</button>' +
                                 '<button class="btn-action" style="background:#200b0d;color:#f87171;border-color:#5a1a1f;" onclick="deleteOrderPrompt(\'' + o.id + '\')" title="Supprimer définitivement la commande">🗑️ Supprimer</button>' +
                             '</div>' +
                             '<div class="status-updater">' +
